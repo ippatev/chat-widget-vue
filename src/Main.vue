@@ -1536,13 +1536,15 @@ export default {
       this.fileAttached = true;
     },
     getListCommands() {
-      if (
-        this.messageListTemplate[this.messageListTemplate.length - 1].buttons !=
-        ""
-      ) {
-        this.buttonsList = this.messageListTemplate[
-          this.messageListTemplate.length - 1
-        ].data.buttons;
+      if (this.messageListTemplate[this.messageListTemplate.length - 1]) {
+        if (
+          this.messageListTemplate[this.messageListTemplate.length - 1]
+            .buttons != ""
+        ) {
+          this.buttonsList = this.messageListTemplate[
+            this.messageListTemplate.length - 1
+          ].data.buttons;
+        }
       }
     },
   },
