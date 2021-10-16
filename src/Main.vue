@@ -220,22 +220,11 @@
         </div>
       </div>
       <button
-        v-if="!showFabWindow"
         id="fab"
-        @click="showFabWindow = true"
+        @click="showFabWindow = !showFabWindow"
         class="sc-launcher"
       >
-        <!--          <i style="color: #4149F2" class="fa fa-comments fa-lg"></i>-->
-        <span>{{ dialogName ? dialogName : 'Без имени' }}</span>
-        <message-icon />
-      </button>
-      <button
-        v-else
-        id="fab"
-        @click="showFabWindow = false"
-        class="sc-launcher"
-      >
-        <span>{{ dialogName ? dialogName : 'Без имени' }}</span>
+        <span>{{ dialogName || 'Без имени' }}</span>
         <cancel-icon />
       </button>
     </div>
@@ -245,7 +234,7 @@
         <div class="elevation-0" no-body>
           <div id="messageListContainer" class="container__message-list">
             <div class="nav__toolbar">
-              <b>{{ dialogName ? dialogName : 'Без имени' }}</b>
+              <b>{{ dialogName || 'Без имени' }}</b>
               <button @click="onClose()" class="button">
                 Завершить беседу
                 <done-icon></done-icon>
@@ -325,10 +314,10 @@
                         </div>
 
                         <div v-else class="message sent">
-                          <div v-if="item.data.text != ''">
+                          <div v-if="item.data.text">
                             {{ item.data.text }}
                           </div>
-                          <div v-else-if="item.data.file != ''">
+                          <div v-else-if="item.data.file">
                             <div v-if="getFooFileType(item.data) != 'image'">
                               <div>
                                 <a target="_blank" :href="getFooFile(item.data)"
@@ -344,7 +333,7 @@
                               :src="getFooFile(item.data)"
                             />
                           </div>
-                          <div v-else-if="item.data.sendedFile != ''">
+                          <div v-else-if="item.data.sendedFile">
                             <img
                               alt="Image message"
                               :src="item.data.sendedFile"
@@ -390,7 +379,7 @@
             @change="detectFiles($event)"
           />
           <button
-            v-if="dataSend.file == null"
+            v-if="!dataSend.file"
             style="color: #4149F2"
             @click="onPickFile('fileInput')"
           >
@@ -401,8 +390,8 @@
           </button>
 
           <textarea
-            required
             v-model="dataSend.text"
+            required
             type="text"
             placeholder="Сообщение"
           ></textarea>
@@ -412,8 +401,8 @@
           </button>
         </div>
         <button
-          v-if="dialogId != null"
           id="btn__video-call"
+          v-if="dialogId"
           @click="sendVideoCall()"
           class="button button__big"
         >
@@ -426,9 +415,7 @@
 </template>
 
 <script>
-import store from '@/store';
 import axios from 'axios';
-import Vue from 'vue';
 import MenuIcon from 'vue-material-design-icons/Menu.vue';
 import MessageIcon from 'vue-material-design-icons/MessageText.vue';
 import CancelIcon from 'vue-material-design-icons/Close.vue';
@@ -451,9 +438,6 @@ export default {
       dialogIsNull: false,
       buttonsList: [],
       showFabWindow: false,
-      windowStatus: 'Служба поддержки',
-      trueSearch: 0,
-      first: 1,
       dialogToken: this.$root.$el.parentElement.dataset.dtoken, // "401cf075-225e-419a-9a4a-80db8bc1d32b",
       ch_dialogToken: null,
       dialogId: this.$root.$el.parentElement.dataset.dialog, //"5d38153f0e9ed01d7c830ca7"
@@ -466,22 +450,10 @@ export default {
       titleImageUrl:
         'https://a.slack-edge.com/66f9/img/avatars-teams/ava_0001-34.png',
       messageList: [],
-      newMessagesCount: 0,
-      isChatOpen: false,
-      showTypingIndicator: '',
-      colors: null,
-      chosenColor: null,
-      alwaysScrollToBottom: false,
-      messageStyling: true,
-      userIsTyping: false,
       urlOnErrorEvent: 'https://ic.myams.biz/',
-      newMessages: [],
       commands: [],
       dialogDelete: false,
       menuItems: [{ id: 'del', title: 'Закрыть диалог' }],
-      chatLoading: true,
-      loadingNewDialog: false,
-      loading: false,
       fileFoo: [],
       fileAttached: false,
       file: null,
@@ -504,13 +476,10 @@ export default {
         file: null,
         file64: null,
       },
-      newDialogCount: 0,
       dialogsList: [],
       newDialogList: [],
       messageListTemplate: [],
       newMessageList: [],
-      posts: [],
-      busy: true,
       selectedDialog: [],
       server_message_count: 0,
       server_partion_count: 0,
@@ -521,10 +490,10 @@ export default {
   },
 
   created() {
-    if (this.dialogId != null) {
+    if (this.dialogId) {
       this.getDialogMessages();
       console.log('dialog');
-    } else if (this.channelId != null) {
+    } else if (this.channelId) {
       this.getChannelMessages();
       console.log('channel');
     }
@@ -919,11 +888,13 @@ export default {
       var time = date + ' ' + month;
       return time;
     },
+    /*
     onScrollLog(e) {
       if (e.target.scrollTop == 0) {
         this.loadMore();
       }
     },
+    */
     OnScroll: function() {
       // if (this.typeElement == "widget") {
       //   var container = this.$refs.messageList;
@@ -1026,7 +997,6 @@ export default {
                 // console.log(error);
               });
           } else {
-            console.log('CREATE');
             //Если уже сущестует НЕ TokenToken
             const ids = {
               token: token,
@@ -1102,47 +1072,34 @@ export default {
                 // console.log(error);
               });
           }
-        })
-        .catch((err) => {
-          // console.log(err);
         });
     },
     openWebSocket(url, msg, type) {
-      console.log(url, msg, type);
-
       this.ws = new ReconnectingWebSocket(url);
-      console.log(this.ws);
 
       if (this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify(msg));
       }
       this.ws.onopen = () => {
-        console.log(type);
         if (type == 'open') {
           this.ws.send('{"command":"list"}');
         }
-        // console.log(`WebSocket connect`)
       };
 
       this.ws.onerror = (error) => {
-        // console.log(`WebSocket error: ${error}`)
+        console.error(error);
       };
 
       this.ws.onmessage = (e) => {
         var message = JSON.parse(e.data);
-        console.log(message);
         if (message.partionCount == null) {
-          // this.local_partion_count--;
           this.server_message_count++;
           if (
             this.messageList.length ===
             parseInt(this.server_message_count - this.local_partion_count)
           ) {
-            // console.log('for')
             for (let i in message) {
               var dataStore = message[i];
-
-              // console.log(dataStore)
 
               if (this.dialogId == null) {
                 if (dataStore.type == 'input') {
@@ -1186,8 +1143,6 @@ export default {
               this.loadMore();
             }
           } else {
-            // console.log(this.messageList)
-
             if (message.newId == null) {
               if (message.changestate) {
                 // this.messageList[this.messageList.indexOf(data.id)].data.state = data.state;
@@ -1295,7 +1250,7 @@ export default {
         }
       };
       this.ws.onclose = function(event) {
-        // console.log('соединение закрыто');
+        console.info('ws onclose: ', event);
       };
       if (this.dialogId != null) {
         this.array_ws[this.dialogId] = Object(this.ws);
@@ -1332,8 +1287,6 @@ export default {
         .child('dialogs')
         .once('value', function(snapshot) {})
         .then((snap) => {
-          // console.log(snap.val())
-
           var selectedDialog = null;
 
           for (let key in snap.val()) {
@@ -1348,7 +1301,6 @@ export default {
             .child('dialogs')
             .child(selectedDialog)
             .update({ last_message_text: message });
-          // console.log(selectedDialog)
         });
     },
     getDialogItemColor: function(itemId) {
@@ -1433,8 +1385,6 @@ export default {
     },
     getChannelMessages() {
       if (this.$ls.get('chdtoken')) {
-        console.log('load-token');
-
         this.ch_dialogToken = this.$ls.get('chdtoken');
 
         const tokenids = {
@@ -1442,7 +1392,6 @@ export default {
           dialogToken: this.ch_dialogToken,
           channelId: this.channelId,
         };
-        // console.log("load token");
         axios
           .post('https://automessager.biz/api/virtual/load/', tokenids)
           .then((response) => {
@@ -1506,8 +1455,7 @@ export default {
           .then((res) => {
             this.$ls.remove('chdtoken');
             this.dialogIsNull = true;
-          })
-          .catch((err) => console.log(err));
+          });
       }
     },
     detectFiles(event) {
@@ -1518,8 +1466,6 @@ export default {
       }
       const fileReader = new FileReader();
       fileReader.addEventListener('load', () => {
-        // this.file = e.target.result.split(',')[1];
-
         var imageTypes = ['jpg', 'jpeg', 'png', 'bmp'];
 
         var extension = filename
@@ -1541,11 +1487,13 @@ export default {
       fileReader.readAsDataURL(files[0]);
       this.fileAttached = true;
     },
+    /**
+     * @todo
+     */
     getListCommands() {
       if (this.messageListTemplate[this.messageListTemplate.length - 1]) {
         if (
-          this.messageListTemplate[this.messageListTemplate.length - 1]
-            .buttons != ''
+          this.messageListTemplate[this.messageListTemplate.length - 1].buttons
         ) {
           this.buttonsList = this.messageListTemplate[
             this.messageListTemplate.length - 1
@@ -1554,10 +1502,12 @@ export default {
       }
     },
   },
+  /**
+   * @todo
+   */
   updated() {
-    this.getListCommands();
+    // this.getListCommands();
   },
-  computed: {},
 };
 </script>
 
