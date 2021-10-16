@@ -17,7 +17,7 @@
             >
               <div id="messageListContainer" class="container__message-list">
                 <div class="nav__toolbar">
-                  <b>{{ dialogName ? dialogName : "Без имени" }}</b>
+                  <b>{{ dialogName ? dialogName : 'Без имени' }}</b>
                   <button @click="onClose()" class="button">
                     Завершить беседу
                     <done-icon></done-icon>
@@ -226,7 +226,7 @@
         class="sc-launcher"
       >
         <!--          <i style="color: #4149F2" class="fa fa-comments fa-lg"></i>-->
-        <span>{{ dialogName ? dialogName : "Без имени" }}</span>
+        <span>{{ dialogName ? dialogName : 'Без имени' }}</span>
         <message-icon />
       </button>
       <button
@@ -235,7 +235,7 @@
         @click="showFabWindow = false"
         class="sc-launcher"
       >
-        <span>{{ dialogName ? dialogName : "Без имени" }}</span>
+        <span>{{ dialogName ? dialogName : 'Без имени' }}</span>
         <cancel-icon />
       </button>
     </div>
@@ -245,7 +245,7 @@
         <div class="elevation-0" no-body>
           <div id="messageListContainer" class="container__message-list">
             <div class="nav__toolbar">
-              <b>{{ dialogName ? dialogName : "Без имени" }}</b>
+              <b>{{ dialogName ? dialogName : 'Без имени' }}</b>
               <button @click="onClose()" class="button">
                 Завершить беседу
                 <done-icon></done-icon>
@@ -426,15 +426,15 @@
 </template>
 
 <script>
-import store from "@/store";
-import axios from "axios";
-import Vue from "vue";
-import MenuIcon from "vue-material-design-icons/Menu.vue";
-import MessageIcon from "vue-material-design-icons/MessageText.vue";
-import CancelIcon from "vue-material-design-icons/Close.vue";
-import PaperClipIcon from "vue-material-design-icons/Paperclip.vue";
-import DoneIcon from "vue-material-design-icons/Check.vue";
-import OpenInNewIcon from "vue-material-design-icons/OpenInNew.vue";
+import store from '@/store';
+import axios from 'axios';
+import Vue from 'vue';
+import MenuIcon from 'vue-material-design-icons/Menu.vue';
+import MessageIcon from 'vue-material-design-icons/MessageText.vue';
+import CancelIcon from 'vue-material-design-icons/Close.vue';
+import PaperClipIcon from 'vue-material-design-icons/Paperclip.vue';
+import DoneIcon from 'vue-material-design-icons/Check.vue';
+import OpenInNewIcon from 'vue-material-design-icons/OpenInNew.vue';
 
 export default {
   components: {
@@ -451,7 +451,7 @@ export default {
       dialogIsNull: false,
       buttonsList: [],
       showFabWindow: false,
-      windowStatus: "Служба поддержки",
+      windowStatus: 'Служба поддержки',
       trueSearch: 0,
       first: 1,
       dialogToken: this.$root.$el.parentElement.dataset.dtoken, // "401cf075-225e-419a-9a4a-80db8bc1d32b",
@@ -464,21 +464,21 @@ export default {
       connection: null,
       participants: [],
       titleImageUrl:
-        "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0001-34.png",
+        'https://a.slack-edge.com/66f9/img/avatars-teams/ava_0001-34.png',
       messageList: [],
       newMessagesCount: 0,
       isChatOpen: false,
-      showTypingIndicator: "",
+      showTypingIndicator: '',
       colors: null,
       chosenColor: null,
       alwaysScrollToBottom: false,
       messageStyling: true,
       userIsTyping: false,
-      urlOnErrorEvent: "https://ic.myams.biz/",
+      urlOnErrorEvent: 'https://ic.myams.biz/',
       newMessages: [],
       commands: [],
       dialogDelete: false,
-      menuItems: [{ id: "del", title: "Закрыть диалог" }],
+      menuItems: [{ id: 'del', title: 'Закрыть диалог' }],
       chatLoading: true,
       loadingNewDialog: false,
       loading: false,
@@ -523,10 +523,10 @@ export default {
   created() {
     if (this.dialogId != null) {
       this.getDialogMessages();
-      console.log("dialog");
+      console.log('dialog');
     } else if (this.channelId != null) {
       this.getChannelMessages();
-      console.log("channel");
+      console.log('channel');
     }
 
     global.root = this;
@@ -534,41 +534,47 @@ export default {
   methods: {
     async sendVideoCall() {
       let uuid = await this.get_uuid();
-      window.open(`https://test-app-ff08f.firebaseapp.com/${uuid}`, "_blank");
+
+      /**
+       * @todo DRY
+       */
+      window.open(`https://test-app-ff08f.firebaseapp.com/${uuid}`, '_blank');
       this.onSendCommand(
         `*перейдите по ссылку чтобы присоединиться к видеозвонку: https://test-app-ff08f.firebaseapp.com/${uuid}`
       );
     },
     get_uuid() {
-      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
         var r = (Math.random() * 16) | 0,
-          v = c == "x" ? r : (r & 0x3) | 0x8;
+          v = c == 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
       });
     },
+    /**
+     * @todo needs to refactor
+     */
     loadMore() {
       var array = [];
       const res = this.messageList.filter(
-        (snap) => snap.id == this.local_partion_count
+        (v) => v.id == this.local_partion_count
       );
-      // console.log(res)
 
       for (let key in res) {
         array.push(res[key].messages);
-        console.log(res[key].messages);
       }
       this.messageListTemplate = [...array, ...this.messageListTemplate];
       this.local_partion_count--;
     },
+    /**
+     * @todo needs to refactor
+     */
     deleteDialog: function(token, dialogId) {
       firebase_main
         .database()
         .ref(token)
-        .child("dialogs")
-        .once("value", function(snapshot) {})
+        .child('dialogs')
+        .once('value', function(snapshot) {})
         .then((snap) => {
-          // console.log(snap.val())
-
           var selectedDialog = null;
 
           for (let key in snap.val()) {
@@ -580,33 +586,35 @@ export default {
           firebase_main
             .database()
             .ref(token)
-            .child("dialogs")
+            .child('dialogs')
             .child(selectedDialog)
             .remove();
         });
     },
+    /**
+     * @todo needs to refactor
+     */
     getNewDialog: function() {
       var arrayND = [];
       firebase_main
         .database()
         .ref(this.token)
-        .once("value", function() {})
+        .once('value', function() {})
         .then((res) => {
           for (let key in res.val().newDialog) {
             axios
               .get(
-                "https://automessager.biz/api/client/info/" +
+                'https://automessager.biz/api/client/info/' +
                   res.val().newDialog[key].id +
-                  "/" +
+                  '/' +
                   this.token +
-                  "/"
+                  '/'
               )
               .then((snap) => {
-                console.log(snap);
                 arrayND.push({
                   id: res.val().newDialog[key].id,
-                  avatar: snap.data.info["imageProfile"],
-                  name: snap.data.info["name"],
+                  avatar: snap.data.info['imageProfile'],
+                  name: snap.data.info['name'],
                   owner: res.val().newDialog[key].owner,
                   role: {
                     id: res.val().newDialog[key].roleId,
@@ -621,8 +629,10 @@ export default {
           this.newDialogList = arrayND;
         });
     },
+    /**
+     * @todo needs to refactor
+     */
     getNewMessage: function(id) {
-      console.log("new");
       var arrayR = [];
 
       this.newMessageList.forEach(function(snapshot) {
@@ -634,7 +644,7 @@ export default {
       return arrayR.toString();
     },
     MenuOnClick: function(id) {
-      if (id == "del") {
+      if (id == 'del') {
         this.dialogDelete = true;
       }
     },
@@ -643,18 +653,20 @@ export default {
 
       if (fileId) {
         axios
-          .get("https://automessager.biz/api/dialog/file/" + fileId)
+          .get('https://automessager.biz/api/dialog/file/' + fileId)
           .then((response) => {
             this.fileFoo.push({
               id: file.id,
               url: response.data.url,
               type: response.data._type,
             });
-            // console.log(this.fileFoo)
           });
       }
     },
     getFooFile: function(file) {
+      /**
+       * @todo why toString() ?
+       */
       return this.fileFoo
         .filter((x) => x.id === file.id)
         .map((x) => x.url)
@@ -662,6 +674,9 @@ export default {
     },
     getFooFileType: function(file) {
       // let id = file.files;
+      /**
+       * @todo  filter, map ?
+       */
       return this.fileFoo
         .filter((x) => x.id === file.id)
         .map((x) => x.type)
@@ -690,16 +705,16 @@ export default {
           this.nulling(2);
         }
       } else if (text != null) {
-        console.log("text");
+        console.log('text');
         if (this.ws.readyState == WebSocket.CLOSED) {
           this.openWebSocket(
             this.ws.url,
             '{"command":"message", "text":"' + text + '"}'
           );
-          this.nulling(1, "text");
+          this.nulling(1, 'text');
         } else if (this.ws.readyState == WebSocket.OPEN) {
           this.ws.send('{"command":"message", "text":"' + text + '"}');
-          this.nulling(1, "text");
+          this.nulling(1, 'text');
         }
       } else if (file != null) {
         if (this.ws.readyState == WebSocket.CLOSED) {
@@ -707,13 +722,16 @@ export default {
             this.ws.url,
             '{"command":"file", "file":"' + file + '"}'
           );
-          this.nulling(1, "file");
+          this.nulling(1, 'file');
         } else if (this.ws.readyState == WebSocket.OPEN) {
           this.ws.send('{"command":"file", "file":"' + file + '"}');
-          this.nulling(1, "file");
+          this.nulling(1, 'file');
         }
       }
     },
+    /**
+     * @todo needs to refactor
+     */
     nulling: function(type, input) {
       if (this.dialogId == null) {
         var message_random_id = Math.random() * (1000 - 1) + 1;
@@ -723,11 +741,11 @@ export default {
               ...this.messageListTemplate,
               {
                 id: message_random_id,
-                by: "sended",
+                by: 'sended',
                 data: {
                   text: this.dataSend.text,
-                  file: "",
-                  type: "sended",
+                  file: '',
+                  type: 'sended',
                   date: new Date(),
                   state: 1,
                 },
@@ -735,18 +753,18 @@ export default {
             ];
             this.dataSend.text = null;
           } else {
-            if (this.dataSend.fileType == "image") {
+            if (this.dataSend.fileType == 'image') {
               this.messageListTemplate = [
                 ...this.messageListTemplate,
                 {
                   id: message_random_id,
-                  by: "sended",
+                  by: 'sended',
                   data: {
-                    text: "",
-                    file: "",
+                    text: '',
+                    file: '',
                     sendedFile: this.dataSend.file64,
                     fileType: this.dataSend.fileType,
-                    type: "sended",
+                    type: 'sended',
                     date: new Date(),
                     state: 1,
                   },
@@ -760,13 +778,13 @@ export default {
                 ...this.messageListTemplate,
                 {
                   id: message_random_id,
-                  by: "sended",
+                  by: 'sended',
                   data: {
-                    text: "",
-                    file: "",
+                    text: '',
+                    file: '',
                     sendedFile: this.dataSend.file64,
                     fileType: this.dataSend.fileType,
-                    type: "sended",
+                    type: 'sended',
                     date: new Date(),
                     state: 1,
                   },
@@ -778,18 +796,18 @@ export default {
             }
           }
         } else if (type === 2) {
-          if (this.dataSend.fileType == "image") {
+          if (this.dataSend.fileType == 'image') {
             this.messageListTemplate = [
               ...this.messageListTemplate,
               {
                 id: message_random_id,
-                by: "sended",
+                by: 'sended',
                 data: {
-                  text: "",
-                  file: "",
+                  text: '',
+                  file: '',
                   sendedFile: this.dataSend.file64,
                   fileType: this.dataSend.fileType,
-                  type: "sended",
+                  type: 'sended',
                   date: new Date(),
                   state: 1,
                 },
@@ -803,13 +821,13 @@ export default {
               ...this.messageListTemplate,
               {
                 id: message_random_id,
-                by: "sended",
+                by: 'sended',
                 data: {
-                  text: "",
-                  file: "",
+                  text: '',
+                  file: '',
                   sendedFile: this.dataSend.file64,
                   fileType: this.dataSend.fileType,
-                  type: "sended",
+                  type: 'sended',
                   date: new Date(),
                   state: 1,
                 },
@@ -824,11 +842,11 @@ export default {
             ...this.messageListTemplate,
             {
               id: message_random_id,
-              by: "sended",
+              by: 'sended',
               data: {
                 text: this.dataSend.text,
-                file: "",
-                type: "sended",
+                file: '',
+                type: 'sended',
                 date: new Date(),
                 state: 1,
               },
@@ -841,57 +859,56 @@ export default {
     onSendCommand: function(text) {
       this.dataSend.text = text;
       if (text != null) {
-        console.log("text");
+        console.log('text');
         if (this.ws.readyState == WebSocket.CLOSED) {
           this.openWebSocket(
             this.ws.url,
             '{"command":"message", "text":"' + text + '"}'
           );
-          this.nulling(1, "text");
+          this.nulling(1, 'text');
         } else if (this.ws.readyState == WebSocket.OPEN) {
           this.ws.send('{"command":"message", "text":"' + text + '"}');
-          this.nulling(1, "text");
+          this.nulling(1, 'text');
         }
       }
     },
     getDate: function(dataDate) {
       var a = new Date(dataDate);
       var months = [
-        "янв",
-        "фев",
-        "мар",
-        "апр",
-        "май",
-        "июн",
-        "июл",
-        "авг",
-        "сен",
-        "окт",
-        "ноя",
-        "дек",
+        'янв',
+        'фев',
+        'мар',
+        'апр',
+        'май',
+        'июн',
+        'июл',
+        'авг',
+        'сен',
+        'окт',
+        'ноя',
+        'дек',
       ];
       var date = a.getDate();
       var month = months[a.getMonth()];
 
-      var time = date + " " + month;
+      var time = date + ' ' + month;
       return time;
     },
     getUTCDate: function(timestamp) {
-      console.log(timestamp);
       var a = new Date(timestamp * 1000);
       var months = [
-        "янв",
-        "фев",
-        "мар",
-        "апр",
-        "май",
-        "июн",
-        "июл",
-        "авг",
-        "сен",
-        "окт",
-        "ноя",
-        "дек",
+        'янв',
+        'фев',
+        'мар',
+        'апр',
+        'май',
+        'июн',
+        'июл',
+        'авг',
+        'сен',
+        'окт',
+        'ноя',
+        'дек',
       ];
       var year = a.getFullYear();
       var month = months[a.getMonth()];
@@ -899,11 +916,10 @@ export default {
       var hour = a.getHours();
       var min = a.getMinutes();
       var sec = a.getSeconds();
-      var time = date + " " + month;
+      var time = date + ' ' + month;
       return time;
     },
     onScrollLog(e) {
-      console.log(e);
       if (e.target.scrollTop == 0) {
         this.loadMore();
       }
@@ -921,31 +937,26 @@ export default {
       this.commands = JSON.parse(json);
       //json=[{text:"Создать заявку", id:"fdgd"},{text:"Создать заявку", id:"fdgd"},{text:"Создать заявку", id:"fdgd"},]
     },
-
     onCommandsResult: function(idMenu, idDialog) {
-      document.getElementById("onCommand").setAttribute("value", idMenu);
-      document.getElementById("onCommand").dataset.dialogId = idDialog;
-      document.getElementById("onCommand").click();
+      document.getElementById('onCommand').setAttribute('value', idMenu);
+      document.getElementById('onCommand').dataset.dialogId = idDialog;
+      document.getElementById('onCommand').click();
     },
-
     createDialog(token, dialogId, OwnerId, urlError, role, Dkey) {
       console.log(token, dialogId, OwnerId, urlError, role, Dkey);
       firebase_main
         .database()
         .ref(token)
-        .once("value", function(snap) {})
+        .once('value', function(snap) {})
         .then((res) => {
-          // console.log(res);
-
           if (res.val() != null) {
-            console.log("CREATE");
+            console.log('CREATE');
             const ids = {
               token: token,
               dialogId: dialogId,
               urlOnErrorEvent: urlError,
             };
 
-            console.log(ids);
             // firebase_main.database().ref(token).child("dialogs").orderByChild('father_dialog_id').equalTo(dialogId).once("value", function (snapshot) {
             //     console.log(snapshot)
             // }).then((res)=>{
@@ -955,24 +966,24 @@ export default {
             // })
 
             axios
-              .post("https://automessager.biz/api/virtual/create/", ids)
+              .post('https://automessager.biz/api/virtual/create/', ids)
               .then((response) => {
                 console.log(response);
                 document
-                  .getElementById("onCreateDialog")
-                  .setAttribute("value", response.data.dialogId);
-                document.getElementById("onCreateDialog").click();
+                  .getElementById('onCreateDialog')
+                  .setAttribute('value', response.data.dialogId);
+                document.getElementById('onCreateDialog').click();
 
                 this.dialogsList.push({
                   father_dialog_id: dialogId,
-                  avatar: response.data.info["imageProfile"],
+                  avatar: response.data.info['imageProfile'],
                   dialogOwnerId: OwnerId,
                   id: response.data.dialogId,
-                  last_message: "message",
-                  last_message_date: "",
+                  last_message: 'message',
+                  last_message_date: '',
                   role: role,
-                  name: response.data.info["name"],
-                  phone: response.data.info["uid"],
+                  name: response.data.info['name'],
+                  phone: response.data.info['uid'],
                   token: response.data.dialogToken,
                 });
 
@@ -980,17 +991,17 @@ export default {
                 firebase_main
                   .database()
                   .ref(token)
-                  .child("dialogs")
+                  .child('dialogs')
                   .push({
                     father_dialog_id: dialogId,
-                    avatar: response.data.info["imageProfile"],
+                    avatar: response.data.info['imageProfile'],
                     dialogOwnerId: OwnerId,
                     id: response.data.dialogId,
-                    last_message: "message",
-                    last_message_date: "",
+                    last_message: 'message',
+                    last_message_date: '',
                     role: role,
-                    name: response.data.info["name"],
-                    phone: response.data.info["uid"],
+                    name: response.data.info['name'],
+                    phone: response.data.info['uid'],
                     token: response.data.dialogToken,
                   })
                   .then((res) => {
@@ -1000,7 +1011,7 @@ export default {
                     firebase_main
                       .database()
                       .ref(token)
-                      .child("newDialog")
+                      .child('newDialog')
                       .child(Dkey)
                       .remove();
                     // window.location.reload()
@@ -1015,7 +1026,7 @@ export default {
                 // console.log(error);
               });
           } else {
-            console.log("CREATE");
+            console.log('CREATE');
             //Если уже сущестует НЕ TokenToken
             const ids = {
               token: token,
@@ -1027,7 +1038,7 @@ export default {
             //   'Access-Control-Allow-Origin': '*'
             // }
             axios
-              .post("https://automessager.biz/api/virtual/create/", ids)
+              .post('https://automessager.biz/api/virtual/create/', ids)
               .then((response) => {
                 // store.state.dialogs.push({id: this.dialogId, token: response.data.dialogToken});
                 //console.log('data', response.data.link);
@@ -1038,14 +1049,14 @@ export default {
 
                 this.dialogsList.push({
                   father_dialog_id: dialogId,
-                  avatar: response.data.info["imageProfile"],
+                  avatar: response.data.info['imageProfile'],
                   dialogOwnerId: OwnerId,
                   id: response.data.dialogId,
-                  last_message: "message",
-                  last_message_date: "",
+                  last_message: 'message',
+                  last_message_date: '',
                   role: role,
-                  name: response.data.info["name"],
-                  phone: response.data.info["uid"],
+                  name: response.data.info['name'],
+                  phone: response.data.info['uid'],
                   token: response.data.dialogToken,
                 });
 
@@ -1056,14 +1067,14 @@ export default {
                     dialogs: [
                       {
                         father_dialog_id: dialogId,
-                        avatar: response.data.info["imageProfile"],
+                        avatar: response.data.info['imageProfile'],
                         dialogOwnerId: OwnerId,
                         id: response.data.dialogId,
-                        last_message: "Нет сообщений",
-                        last_message_date: "",
+                        last_message: 'Нет сообщений',
+                        last_message_date: '',
                         role: role,
-                        name: response.data.info["name"],
-                        phone: response.data.info["uid"],
+                        name: response.data.info['name'],
+                        phone: response.data.info['uid'],
                         token: response.data.dialogToken,
                       },
                     ],
@@ -1077,7 +1088,7 @@ export default {
                     firebase_main
                       .database()
                       .ref(token)
-                      .child("newDialog")
+                      .child('newDialog')
                       .child(Dkey)
                       .remove();
                   })
@@ -1096,9 +1107,6 @@ export default {
           // console.log(err);
         });
     },
-    dataFilesFoo() {
-      // console.log(this.fileFoo);
-    },
     openWebSocket(url, msg, type) {
       console.log(url, msg, type);
 
@@ -1110,7 +1118,7 @@ export default {
       }
       this.ws.onopen = () => {
         console.log(type);
-        if (type == "open") {
+        if (type == 'open') {
           this.ws.send('{"command":"list"}');
         }
         // console.log(`WebSocket connect`)
@@ -1137,12 +1145,12 @@ export default {
               // console.log(dataStore)
 
               if (this.dialogId == null) {
-                if (dataStore.type == "input") {
+                if (dataStore.type == 'input') {
                   this.messageList.push({
                     id: this.server_message_count,
                     messages: {
                       id: dataStore.id,
-                      by: "sended",
+                      by: 'sended',
                       data: dataStore,
                     },
                   });
@@ -1151,7 +1159,7 @@ export default {
                     id: this.server_message_count,
                     messages: {
                       id: dataStore.id,
-                      by: "input",
+                      by: 'input',
                       data: dataStore,
                     },
                   });
@@ -1167,7 +1175,7 @@ export default {
                 });
               }
 
-              if (dataStore.files != "") {
+              if (dataStore.files != '') {
                 this.getItemFile(dataStore);
               }
             }
@@ -1194,18 +1202,18 @@ export default {
                 //     data: {text: "key.data", type: 'input', date: new Date(), state:data.state}
                 // });
               } else {
-                if (message.type == "sended") {
+                if (message.type == 'sended') {
                   this.messageListTemplate = [
                     ...this.messageListTemplate,
                     {
                       id: message.id,
-                      by: "input",
+                      by: 'input',
                       data: message,
                     },
                   ];
                 }
 
-                if (message.files != "") {
+                if (message.files != '') {
                   this.getItemFile(message);
                 }
               }
@@ -1223,11 +1231,11 @@ export default {
                   ...this.messageListTemplate,
                   {
                     id: message.newId,
-                    by: "sended",
+                    by: 'sended',
                     data: {
                       text: this.dataSend.text,
-                      file: "",
-                      type: "sended",
+                      file: '',
+                      type: 'sended',
                       date: new Date(),
                       state: 1,
                     },
@@ -1235,18 +1243,18 @@ export default {
                 ];
                 this.dataSend.text = null;
               } else {
-                if (this.dataSend.fileType == "image") {
+                if (this.dataSend.fileType == 'image') {
                   this.messageListTemplate = [
                     ...this.messageListTemplate,
                     {
                       id: message.newId,
-                      by: "sended",
+                      by: 'sended',
                       data: {
-                        text: "",
-                        file: "",
+                        text: '',
+                        file: '',
                         sendedFile: this.dataSend.file64,
                         fileType: this.dataSend.fileType,
-                        type: "sended",
+                        type: 'sended',
                         date: new Date(),
                         state: 1,
                       },
@@ -1260,13 +1268,13 @@ export default {
                     ...this.messageListTemplate,
                     {
                       id: message.newId,
-                      by: "sended",
+                      by: 'sended',
                       data: {
-                        text: "",
-                        file: "",
+                        text: '',
+                        file: '',
                         sendedFile: this.dataSend.file64,
                         fileType: this.dataSend.fileType,
-                        type: "sended",
+                        type: 'sended',
                         date: new Date(),
                         state: 1,
                       },
@@ -1303,13 +1311,13 @@ export default {
       this.dialog.type = null;
     },
     dialogShow: function(type) {
-      if (type == "dialogs") {
+      if (type == 'dialogs') {
         this.dialog.show = true;
-        this.dialog.title = "Новый диалог";
+        this.dialog.title = 'Новый диалог';
       }
     },
     dialogBtnActionClick: function(type) {
-      if (type == "dialogs") {
+      if (type == 'dialogs') {
         const data = {
           name: this.dialog.text,
           visible: true,
@@ -1321,8 +1329,8 @@ export default {
       firebase_main
         .database()
         .ref(this.token)
-        .child("dialogs")
-        .once("value", function(snapshot) {})
+        .child('dialogs')
+        .once('value', function(snapshot) {})
         .then((snap) => {
           // console.log(snap.val())
 
@@ -1337,27 +1345,26 @@ export default {
           firebase_main
             .database()
             .ref(this.token)
-            .child("dialogs")
+            .child('dialogs')
             .child(selectedDialog)
             .update({ last_message_text: message });
           // console.log(selectedDialog)
         });
     },
     getDialogItemColor: function(itemId) {
-      var valueColor = "";
+      var valueColor = '';
       if (itemId == this.selectedDialog.id) {
-        valueColor = "accent";
+        valueColor = 'accent';
       }
       return valueColor;
     },
     getDialogItemTitleColor: function(itemId) {
-      var valueColor = "";
+      var valueColor = '';
       if (itemId == this.selectedDialog.id) {
-        valueColor = "white";
-      } else valueColor = "black";
+        valueColor = 'white';
+      } else valueColor = 'black';
       return valueColor;
     },
-
     getNewDialogCreate: function(dialog) {
       this.createDialog(
         this.token,
@@ -1368,7 +1375,9 @@ export default {
         dialog.Dkey
       );
     },
-
+    /**
+     * needs to refactor
+     */
     getDialogMessages() {
       // console.log(dialog);
 
@@ -1397,7 +1406,7 @@ export default {
       //   'Access-Control-Allow-Origin': '*'
       // }
       axios
-        .post("https://automessager.biz/api/virtual/load/", ids)
+        .post('https://automessager.biz/api/virtual/load/', ids)
         .then((response) => {
           // console.log(response);
           // store.state.dialogs.push({id: this.dialogId, token: response.data.dialogToken});
@@ -1407,10 +1416,10 @@ export default {
 
           // console.log('RESPONSE:',response);
 
-          this.dialogName = response.data.info["name"]
-            ? response.data.info["name"]
-            : "Без имени";
-          this.openWebSocket(reconnect, null, "open");
+          this.dialogName = response.data.info['name']
+            ? response.data.info['name']
+            : 'Без имени';
+          this.openWebSocket(reconnect, null, 'open');
 
           // client.js
           //const WebSocket = require('ws')
@@ -1422,12 +1431,11 @@ export default {
 
       // console.log("OPEN_WEBSOCKET")
     },
-
     getChannelMessages() {
-      if (this.$ls.get("chdtoken")) {
-        console.log("load-token");
+      if (this.$ls.get('chdtoken')) {
+        console.log('load-token');
 
-        this.ch_dialogToken = this.$ls.get("chdtoken");
+        this.ch_dialogToken = this.$ls.get('chdtoken');
 
         const tokenids = {
           token: this.token,
@@ -1436,11 +1444,11 @@ export default {
         };
         // console.log("load token");
         axios
-          .post("https://automessager.biz/api/virtual/load/", tokenids)
+          .post('https://automessager.biz/api/virtual/load/', tokenids)
           .then((response) => {
             // console.log(response);
             //console.log('data', response.data.link);
-            this.openWebSocket(response.data.reconnect, null, "open");
+            this.openWebSocket(response.data.reconnect, null, 'open');
             // client.js
 
             //const WebSocket = require('ws')
@@ -1450,24 +1458,24 @@ export default {
             // console.log(error);
           });
       } else {
-        console.log("create token");
+        console.log('create token');
 
         const ids = {
           token: this.token,
           channelId: this.channelId,
           urlOnErrorEvent: this.urlOnError
             ? this.urlOnError
-            : "http://yt.myams.biz:8080/",
+            : 'http://yt.myams.biz:8080/',
         };
 
         axios
-          .post("https://automessager.biz/api/virtual/create/", ids)
+          .post('https://automessager.biz/api/virtual/create/', ids)
           .then((response) => {
             console.log(response);
 
-            this.$ls.set("chdtoken", response.data.dialogToken);
+            this.$ls.set('chdtoken', response.data.dialogToken);
             //console.log('data', response.data.link);
-            this.openWebSocket(response.data.reconnect, null, "open");
+            this.openWebSocket(response.data.reconnect, null, 'open');
             // client.js
             //const WebSocket = require('ws')
             //const url = response.data.link
@@ -1477,17 +1485,15 @@ export default {
           });
       }
     },
-
     onPickFile(type) {
-      if (type == "fileInput") {
+      if (type == 'fileInput') {
         this.$refs.fileInput.click();
       }
     },
-
     onClose: function() {
       if (this.ws.readyState == WebSocket.OPEN) {
         this.ws.send('{"command":"close"}');
-        this.$ls.remove("chdtoken");
+        this.$ls.remove('chdtoken');
         this.dialogIsNull = true;
       } else {
         var ids = {
@@ -1496,9 +1502,9 @@ export default {
           token: this.token,
         };
         axios
-          .post("http://automessager.biz/api/virtual/close/", ids)
+          .post('http://automessager.biz/api/virtual/close/', ids)
           .then((res) => {
-            this.$ls.remove("chdtoken");
+            this.$ls.remove('chdtoken');
             this.dialogIsNull = true;
           })
           .catch((err) => console.log(err));
@@ -1507,29 +1513,29 @@ export default {
     detectFiles(event) {
       const files = event.target.files;
       let filename = files[0].name;
-      if (filename.lastIndexOf(".") <= 0) {
-        return alert("Пожалуйста, добавьте файл");
+      if (filename.lastIndexOf('.') <= 0) {
+        return alert('Пожалуйста, добавьте файл');
       }
       const fileReader = new FileReader();
-      fileReader.addEventListener("load", () => {
+      fileReader.addEventListener('load', () => {
         // this.file = e.target.result.split(',')[1];
 
-        var imageTypes = ["jpg", "jpeg", "png", "bmp"];
+        var imageTypes = ['jpg', 'jpeg', 'png', 'bmp'];
 
         var extension = filename
-            .split(".")
+            .split('.')
             .pop()
             .toLowerCase(),
           isTrue = imageTypes.indexOf(extension) > -1;
 
         if (isTrue) {
-          this.dataSend.fileType = "image";
+          this.dataSend.fileType = 'image';
         } else {
-          this.dataSend.fileType = "file";
+          this.dataSend.fileType = 'file';
         }
 
         this.dataSend.file64 = fileReader.result;
-        this.dataSend.file = fileReader.result.split(",")[1];
+        this.dataSend.file = fileReader.result.split(',')[1];
         // console.log(this.dataSend.file)
       });
       fileReader.readAsDataURL(files[0]);
@@ -1539,7 +1545,7 @@ export default {
       if (this.messageListTemplate[this.messageListTemplate.length - 1]) {
         if (
           this.messageListTemplate[this.messageListTemplate.length - 1]
-            .buttons != ""
+            .buttons != ''
         ) {
           this.buttonsList = this.messageListTemplate[
             this.messageListTemplate.length - 1
@@ -1651,7 +1657,7 @@ body {
 
 .message:after {
   position: absolute;
-  content: "";
+  content: '';
   width: 0;
   height: 0;
   border-style: solid;
@@ -1784,7 +1790,7 @@ body {
 }
 
 .conversation .conversation-container:after {
-  content: "";
+  content: '';
   display: table;
   clear: both;
 }
@@ -1861,9 +1867,12 @@ body {
   flex: 8 0 auto;
 }
 
+/**
+* 20vh = 20% ? 
+ */
 .sc-chat-window {
   width: 370px;
-  height: calc(400px-20%);
+  height: calc(400px-20vh);
   position: fixed;
   right: 25px;
   bottom: 20px;
@@ -1873,11 +1882,12 @@ body {
   flex-direction: column;
   justify-content: space-between;
   border-radius: 10px;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   animation: fadeIn;
   animation-duration: 0.3s;
   animation-timing-function: ease-in-out;
 }
+
 @keyframes fadeIn {
   0% {
     display: none;
@@ -1894,10 +1904,14 @@ body {
 .sc-message--them {
   text-align: left;
 }
+
+/**
+* height: 80& --> height: 80%
+ */
 @media (max-width: 450px) {
   .sc-chat-window {
     width: 100%;
-    height: 80&;
+    height: 80%;
     right: 0px;
     left: 0px;
     bottom: 20px;
