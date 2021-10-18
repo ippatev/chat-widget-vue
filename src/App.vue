@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-red-500">
+  <div>
     <div v-if="typeElement == 'widget'">
       <div style="width:335px">
         <div
@@ -11,7 +11,7 @@
           <div style="padding: 0">
             <div
               v-if="!dialogIsNull"
-              class="elevation-0"
+              style="z-index: 0;"
               no-body
               ref="chatWindow"
             >
@@ -34,8 +34,7 @@
                 <div
                   ref="messageList"
                   id="listgroup-ex"
-                  style="position:relative; overflow-y:auto;"
-                  class="text-center"
+                  style="text-align: center;position:relative; overflow-y:auto;"
                 >
                   <!--                    <b-button @click="loadMore()" v-if="messageListTemplate!=''">-->
                   <!--                      Загрузить еще-->
@@ -116,7 +115,7 @@
                                   v-if="getFooFileType(item.data) != 'image'"
                                 >
                                   <div
-                                    class="d-flex w-100 justify-content-between"
+                                    style="display: flex; width: 100%; justify-content: space-between;"
                                   >
                                     <a
                                       target="_blank"
@@ -230,8 +229,8 @@
     </div>
 
     <div ref="messageContainer" v-else>
-      <div style="padding: 0;elevation: 0;">
-        <div class="elevation-0" no-body>
+      <div style="padding: 0;">
+        <div style="z-index: 0;" no-body>
           <div id="messageListContainer" class="container__message-list">
             <div class="nav__toolbar">
               <b>{{ dialogName || 'Без имени' }}</b>
@@ -246,8 +245,7 @@
             </div>
             <div
               id="listgroup-ex"
-              style="position:relative; overflow-y:auto;"
-              class="text-center"
+              style="text-align: center;position:relative; overflow-y:auto;"
             >
               <!--                    <b-button @click="loadMore()" v-if="messageListTemplate!=''">-->
               <!--                      Загрузить еще-->
@@ -266,7 +264,9 @@
                           </div>
                           <div v-else-if="item.data.file != ''">
                             <div v-if="getFooFileType(item.data) != 'image'">
-                              <div class="d-flex w-100 justify-content-between">
+                              <div
+                                style="display: flex; width: 100%; justify-content: space-between;"
+                              >
                                 <a target="_blank" :href="getFooFile(item.data)"
                                   >Файл</a
                                 >
@@ -355,7 +355,7 @@
           <b-row
             v-show="showActions == 'true'"
             no-gutters
-            class="text-center pt-2 pb-2"
+            style="text-align: center; padding-top: 16px; padding-bottom: 16px;"
           >
             <b-col v-for="(key, idx) in buttonsList" :key="idx">
               <button
@@ -1725,6 +1725,9 @@ body {
 }
 
 .sc-launcher {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 0 20px;
   color: black;
   background-color: white;
@@ -1847,6 +1850,10 @@ body {
 }
 
 .button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
   margin: 8px;
   border-radius: 8px;
   background-color: rgb(65, 73, 242);
