@@ -3,6 +3,7 @@ module.exports = {
   devServer: {
     port: 8081,
   },
+
   configureWebpack: {
     plugins: [
       new webpack.optimize.LimitChunkCountPlugin({
@@ -10,8 +11,10 @@ module.exports = {
       }),
     ],
   },
+
   chainWebpack: (config) => {
     config.optimization.delete('splitChunks');
   },
+
   filenameHashing: false,
 };
