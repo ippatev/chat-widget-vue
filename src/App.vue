@@ -74,7 +74,6 @@
                       </div>
                       <span class="metadata">
                         <span class="time">{{ getDate(item.data.date) }}</span>
-                        <!--                              <span class="tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" id="msg-dblcheck-ack" x="2063" y="2076"><path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.88a.32.32 0 0 1-.484.032l-.358-.325a.32.32 0 0 0-.484.032l-.378.48a.418.418 0 0 0 .036.54l1.32 1.267a.32.32 0 0 0 .484-.034l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.88a.32.32 0 0 1-.484.032L1.892 7.77a.366.366 0 0 0-.516.005l-.423.433a.364.364 0 0 0 .006.514l3.255 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z" fill="#4fc3f7"/></svg></span>-->
                       </span>
                     </div>
                   </div>
@@ -84,15 +83,14 @@
           </div>
         </div>
         <div
-          v-if="showActions == 'true'"
-          no-gutters
-          class="text-center pt-2 pb-2"
+          v-if="showActions"
+          style="text-align: center; padding-top: 16px; padding-bottom: 16px;"
         >
           <div v-for="(key, idx) in buttonsList" :key="idx">
             <button
               @click="onSendCommand(key.action)"
               class="button"
-              style="white-space: nowrap;white-space: nowrap; width: 160px;overflow: hidden;text-overflow: ellipsis;"
+              style="width: 160px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"
             >
               <small>{{ key.text }}</small>
             </button>
@@ -100,7 +98,6 @@
         </div>
         <div class="input__group">
           <input
-            id="files"
             ref="fileInput"
             type="file"
             :multiple="false"
@@ -144,7 +141,6 @@
     </div>
     <button
       v-if="typeElement === 'widget'"
-      id="fab"
       @click="showFabWindow = !showFabWindow"
       class="sc-launcher"
     >
@@ -189,7 +185,6 @@ export default {
       messageList: [],
       urlOnErrorEvent: 'https://ic.myams.biz/',
       commands: [],
-      dialogDelete: false,
       menuItems: [{ id: 'del', title: 'Закрыть диалог' }],
       fileFoo: [],
       fileAttached: false,
@@ -214,7 +209,6 @@ export default {
         file64: null,
       },
       dialogsList: [],
-      newDialogList: [],
       messageListTemplate: [],
       newMessageList: [],
       selectedDialog: [],
@@ -237,19 +231,18 @@ export default {
   },
   methods: {
     async sendVideoCall() {
-      let uuid = await this.get_uuid();
+      const uuid = await this.get_uuid();
+      const url = `https://test-app-ff08f.firebaseapp.com/${uuid}`;
 
-      /**
-       * @todo DRY
-       */
-      window.open(`https://test-app-ff08f.firebaseapp.com/${uuid}`, '_blank');
       this.onSendCommand(
-        `*перейдите по ссылку чтобы присоединиться к видеозвонку: https://test-app-ff08f.firebaseapp.com/${uuid}`
+        `*перейдите по ссылку чтобы присоединиться к видеозвонку: ${url}`
       );
+
+      window.open(url, '_blank');
     },
     get_uuid() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        var r = (Math.random() * 16) | 0,
+        const r = (Math.random() * 16) | 0,
           v = c == 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
       });
@@ -269,89 +262,6 @@ export default {
       this.messageListTemplate = [...array, ...this.messageListTemplate];
       this.local_partion_count--;
     },
-    /**
-     * @todo needs to refactor
-     */
-    deleteDialog: function(token, dialogId) {
-      firebase_main
-        .database()
-        .ref(token)
-        .child('dialogs')
-        .once('value', function(snapshot) {})
-        .then((snap) => {
-          var selectedDialog = null;
-
-          for (let key in snap.val()) {
-            if (snap.val()[key].father_dialog_id == dialogId) {
-              selectedDialog = key;
-            }
-          }
-
-          firebase_main
-            .database()
-            .ref(token)
-            .child('dialogs')
-            .child(selectedDialog)
-            .remove();
-        });
-    },
-    /**
-     * @todo needs to refactor
-     */
-    getNewDialog: function() {
-      var arrayND = [];
-      firebase_main
-        .database()
-        .ref(this.token)
-        .once('value', function() {})
-        .then((res) => {
-          for (let key in res.val().newDialog) {
-            axios
-              .get(
-                'https://automessager.biz/api/client/info/' +
-                  res.val().newDialog[key].id +
-                  '/' +
-                  this.token +
-                  '/'
-              )
-              .then((snap) => {
-                arrayND.push({
-                  id: res.val().newDialog[key].id,
-                  avatar: snap.data.info['imageProfile'],
-                  name: snap.data.info['name'],
-                  owner: res.val().newDialog[key].owner,
-                  role: {
-                    id: res.val().newDialog[key].roleId,
-                    name: res.val().newDialog[key].role,
-                  },
-                  urlError: res.val().newDialog[key].urlError,
-                  Dkey: key,
-                });
-              })
-              .catch((err) => console.log(err));
-          }
-          this.newDialogList = arrayND;
-        });
-    },
-    /**
-     * @todo needs to refactor
-     */
-    getNewMessage: function(id) {
-      var arrayR = [];
-
-      this.newMessageList.forEach(function(snapshot) {
-        if (snapshot.id == id) {
-          arrayR.push(snapshot.count);
-        }
-      });
-
-      return arrayR.toString();
-    },
-    MenuOnClick: function(id) {
-      if (id == 'del') {
-        this.dialogDelete = true;
-      }
-    },
     getItemFile(file) {
       let fileId = file.files;
 
@@ -368,19 +278,12 @@ export default {
       }
     },
     getFooFile: function(file) {
-      /**
-       * @todo why toString() ?
-       */
       return this.fileFoo
         .filter((x) => x.id === file.id)
         .map((x) => x.url)
         .toString();
     },
     getFooFileType: function(file) {
-      // let id = file.files;
-      /**
-       * @todo  filter, map ?
-       */
       return this.fileFoo
         .filter((x) => x.id === file.id)
         .map((x) => x.type)
