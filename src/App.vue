@@ -167,40 +167,24 @@ export default {
   },
   data() {
     return {
-      showActions: this.$root.$el.parentElement.dataset.show_actions | false,
+      root: null,
       dialogueEnded: false,
-      buttonsList: [],
       showFabWindow: false,
-      dialogToken: this.$root.$el.parentElement.dataset.dtoken, // "401cf075-225e-419a-9a4a-80db8bc1d32b",
-      ch_dialogToken: null,
-      dialogId: this.$root.$el.parentElement.dataset.dialog, //"5d38153f0e9ed01d7c830ca7"
-      token: this.$root.$el.parentElement.dataset.token,
-      channelId: this.$root.$el.parentElement.dataset.channel,
-      typeElement: this.$root.$el.parentElement.dataset.type,
-      urlOnError: this.$root.$el.parentElement.dataset.urlonerror,
-      connection: null,
-      participants: [],
-      titleImageUrl:
-        'https://a.slack-edge.com/66f9/img/avatars-teams/ava_0001-34.png',
-      messageList: [],
-      urlOnErrorEvent: 'https://ic.myams.biz/',
-      commands: [],
-      menuItems: [{ id: 'del', title: 'Закрыть диалог' }],
-      fileFoo: [],
       fileAttached: false,
       file: null,
       ws: null,
       dialogName: null,
+      messageList: [],
+      commands: [],
+      fileFoo: [],
+      buttonsList: [],
       array_ws: [],
+      messageListTemplate: [],
       dialog: {
         show: false,
         title: null,
         text: null,
         type: null,
-      },
-      dList: {
-        show: false,
-        title: null,
       },
       dataSend: {
         text: null,
@@ -208,15 +192,18 @@ export default {
         file: null,
         file64: null,
       },
-      dialogsList: [],
-      messageListTemplate: [],
-      newMessageList: [],
-      selectedDialog: [],
+      showActions: this.$root.$el.parentElement.dataset.show_actions | false,
+      dialogToken: this.$root.$el.parentElement.dataset.dtoken, // "401cf075-225e-419a-9a4a-80db8bc1d32b",
+      dialogId: this.$root.$el.parentElement.dataset.dialog, //"5d38153f0e9ed01d7c830ca7"
+      token: this.$root.$el.parentElement.dataset.token,
+      channelId: this.$root.$el.parentElement.dataset.channel,
+      typeElement: this.$root.$el.parentElement.dataset.type,
+      urlOnError: this.$root.$el.parentElement.dataset.urlonerror,
+      urlOnErrorEvent: 'https://ic.myams.biz/',
       server_message_count: 0,
       server_partion_count: 0,
       local_partion_count: 0,
       server_message_array: [],
-      root: null,
     };
   },
 
@@ -501,191 +488,15 @@ export default {
       var time = date + ' ' + month;
       return time;
     },
-    /*
-    onScrollLog(e) {
-      if (e.target.scrollTop == 0) {
-        this.loadMore();
-      }
-    },
-    OnScroll: function() {
-      // if (this.typeElement == "widget") {
-      //   var container = this.$refs.messageList;
-      //   setTimeout(() => (container.scrollTop = container.scrollHeight), 500);
-      // } else {
-      //   var container = this.$refs.messageContainer;
-      //   setTimeout(() => (container.scrollTop = container.scrollHeight), 500);
-      // }
-    },
-    */
     setCommands: function(json) {
-      this.commands = JSON.parse(json);
       //json=[{text:"Создать заявку", id:"fdgd"},{text:"Создать заявку", id:"fdgd"},{text:"Создать заявку", id:"fdgd"},]
+
+      this.commands = JSON.parse(json);
     },
     onCommandsResult: function(idMenu, idDialog) {
       document.getElementById('onCommand').setAttribute('value', idMenu);
       document.getElementById('onCommand').dataset.dialogId = idDialog;
       document.getElementById('onCommand').click();
-    },
-    createDialog(token, dialogId, OwnerId, urlError, role, Dkey) {
-      console.log(token, dialogId, OwnerId, urlError, role, Dkey);
-      firebase_main
-        .database()
-        .ref(token)
-        .once('value', function(snap) {})
-        .then((res) => {
-          if (res.val() != null) {
-            console.log('CREATE');
-            const ids = {
-              token: token,
-              dialogId: dialogId,
-              urlOnErrorEvent: urlError,
-            };
-
-            // firebase_main.database().ref(token).child("dialogs").orderByChild('father_dialog_id').equalTo(dialogId).once("value", function (snapshot) {
-            //     console.log(snapshot)
-            // }).then((res)=>{
-            //     console.log(res)
-            // }).catch((err)=>{
-            //
-            // })
-
-            axios
-              .post('https://automessager.biz/api/virtual/create/', ids)
-              .then((response) => {
-                console.log(response);
-                document
-                  .getElementById('onCreateDialog')
-                  .setAttribute('value', response.data.dialogId);
-                document.getElementById('onCreateDialog').click();
-
-                this.dialogsList.push({
-                  father_dialog_id: dialogId,
-                  avatar: response.data.info['imageProfile'],
-                  dialogOwnerId: OwnerId,
-                  id: response.data.dialogId,
-                  last_message: 'message',
-                  last_message_date: '',
-                  role: role,
-                  name: response.data.info['name'],
-                  phone: response.data.info['uid'],
-                  token: response.data.dialogToken,
-                });
-
-                console.log(token);
-                firebase_main
-                  .database()
-                  .ref(token)
-                  .child('dialogs')
-                  .push({
-                    father_dialog_id: dialogId,
-                    avatar: response.data.info['imageProfile'],
-                    dialogOwnerId: OwnerId,
-                    id: response.data.dialogId,
-                    last_message: 'message',
-                    last_message_date: '',
-                    role: role,
-                    name: response.data.info['name'],
-                    phone: response.data.info['uid'],
-                    token: response.data.dialogToken,
-                  })
-                  .then((res) => {
-                    // var arrayD = [];
-                    // var arrayN = [];
-
-                    firebase_main
-                      .database()
-                      .ref(token)
-                      .child('newDialog')
-                      .child(Dkey)
-                      .remove();
-                    // window.location.reload()
-                  })
-                  .catch((err) => console.log(err));
-
-                // client.js
-                //const WebSocket = require('ws')
-                //const url = response.data.link
-              })
-              .catch(function(error) {
-                // console.log(error);
-              });
-          } else {
-            //Если уже сущестует НЕ TokenToken
-            const ids = {
-              token: token,
-              dialogId: dialogId,
-              urlOnErrorEvent: urlError,
-            };
-            //
-            // const headers = {
-            //   'Access-Control-Allow-Origin': '*'
-            // }
-            axios
-              .post('https://automessager.biz/api/virtual/create/', ids)
-              .then((response) => {
-                // store.state.dialogs.push({id: this.dialogId, token: response.data.dialogToken});
-                //console.log('data', response.data.link);
-
-                // this.openWebSocket(response.data.reconnect);
-
-                // var array = response.data.info['formChannels'];
-
-                this.dialogsList.push({
-                  father_dialog_id: dialogId,
-                  avatar: response.data.info['imageProfile'],
-                  dialogOwnerId: OwnerId,
-                  id: response.data.dialogId,
-                  last_message: 'message',
-                  last_message_date: '',
-                  role: role,
-                  name: response.data.info['name'],
-                  phone: response.data.info['uid'],
-                  token: response.data.dialogToken,
-                });
-
-                firebase_main
-                  .database()
-                  .ref(token)
-                  .set({
-                    dialogs: [
-                      {
-                        father_dialog_id: dialogId,
-                        avatar: response.data.info['imageProfile'],
-                        dialogOwnerId: OwnerId,
-                        id: response.data.dialogId,
-                        last_message: 'Нет сообщений',
-                        last_message_date: '',
-                        role: role,
-                        name: response.data.info['name'],
-                        phone: response.data.info['uid'],
-                        token: response.data.dialogToken,
-                      },
-                    ],
-                  })
-                  .then((res) => {
-                    console.log(res);
-
-                    // var arrayD = [];
-                    // var arrayN = [];
-
-                    firebase_main
-                      .database()
-                      .ref(token)
-                      .child('newDialog')
-                      .child(Dkey)
-                      .remove();
-                  })
-                  .catch((err) => console.log(err));
-
-                // client.js
-                //const WebSocket = require('ws')
-                //const url = response.data.link
-              })
-              .catch(function(error) {
-                // console.log(error);
-              });
-          }
-        });
     },
     openWebSocket(url, msg, type) {
       this.ws = new ReconnectingWebSocket(url);
@@ -892,45 +703,6 @@ export default {
         this.dialogReturn();
       }
     },
-    /*
-    updateLastMessage: function(message) {
-      firebase_main
-        .database()
-        .ref(this.token)
-        .child('dialogs')
-        .once('value', function(snapshot) {})
-        .then((snap) => {
-          var selectedDialog = null;
-
-          for (let key in snap.val()) {
-            if (snap.val()[key].id == this.selectedDialog.id) {
-              selectedDialog = key;
-            }
-          }
-
-          firebase_main
-            .database()
-            .ref(this.token)
-            .child('dialogs')
-            .child(selectedDialog)
-            .update({ last_message_text: message });
-        });
-    },
-    */
-    getDialogItemColor: function(itemId) {
-      var valueColor = '';
-      if (itemId == this.selectedDialog.id) {
-        valueColor = 'accent';
-      }
-      return valueColor;
-    },
-    getDialogItemTitleColor: function(itemId) {
-      var valueColor = '';
-      if (itemId == this.selectedDialog.id) {
-        valueColor = 'white';
-      } else valueColor = 'black';
-      return valueColor;
-    },
     getNewDialogCreate: function(dialog) {
       this.createDialog(
         this.token,
@@ -999,11 +771,11 @@ export default {
     },
     getChannelMessages() {
       if (localStorage.getItem('chdtoken')) {
-        this.ch_dialogToken = JSON.parse(localStorage.getItem('chdtoken'));
+        const channelDialogToken = JSON.parse(localStorage.getItem('chdtoken'));
 
         const tokenids = {
           token: this.token,
-          dialogToken: this.ch_dialogToken,
+          dialogToken: channelDialogToken,
           channelId: this.channelId,
         };
         axios
@@ -1099,7 +871,6 @@ export default {
 
         this.dataSend.file64 = fileReader.result;
         this.dataSend.file = fileReader.result.split(',')[1];
-        // console.log(this.dataSend.file)
       });
       fileReader.readAsDataURL(files[0]);
       this.fileAttached = true;
@@ -1120,7 +891,7 @@ export default {
     },
   },
   /**
-   * @todo
+   * @todo find an optimal solution
    */
   updated() {
     //this.getListCommands();
