@@ -1,399 +1,124 @@
 <template>
-  <div class="bg-red-500">
-    <div v-if="typeElement == 'widget'">
-      <div style="width:335px">
-        <div
-          v-show="showFabWindow"
-          class="sc-chat-window"
-          style="margin-bottom: 80px; box-shadow: 0px 0px 27px 1.5px rgba(0,0,0,0.2);"
-          :class="{ opened: showFabWindow, closed: !showFabWindow }"
-        >
-          <div style="padding: 0">
-            <div
-              v-if="!dialogIsNull"
-              class="elevation-0"
-              no-body
-              ref="chatWindow"
-            >
-              <div id="messageListContainer" class="container__message-list">
-                <div class="nav__toolbar">
-                  <b>{{ dialogName ? dialogName : 'Без имени' }}</b>
-                  <button @click="onClose()" class="button">
-                    Завершить беседу
-                    <done-icon></done-icon>
-                  </button>
-                  <!--                  <b-button @click="onClose()" variant="warning" class="mb-2">-->
-                  <!--                    Завершить беседу-->
-                  <!--                    <done-icon></done-icon>-->
-                  <!--                  </b-button>-->
-                </div>
-                <!--                <b-button v-if="dialogId!=null" id="btn__video-call" class="m-2" style="background-color: rgb(65, 73, 242)" @click="sendVideoCall()">-->
-                <!--                  Предложить звонок-->
-                <!--                  <open-in-new-icon/>-->
-                <!--                </b-button>-->
-                <div
-                  ref="messageList"
-                  id="listgroup-ex"
-                  style="position:relative; overflow-y:auto;"
-                  class="text-center"
-                >
-                  <!--                    <b-button @click="loadMore()" v-if="messageListTemplate!=''">-->
-                  <!--                      Загрузить еще-->
-                  <!--                    </b-button>-->
-                  <div class="chat">
-                    <div class="chat-container">
-                      <div class="conversation">
-                        <div class="conversation-container">
+  <div :style="{ width: typeElement === 'widget' ? '335px' : null }">
+    <div
+      v-show="
+        (typeElement === 'widget' && showFabWindow) || typeElement !== 'widget'
+      "
+      :class="{
+        'sc-chat-window': typeElement === 'widget',
+        opened: typeElement === 'widget' && showFabWindow,
+        closed: typeElement === 'widget' && !showFabWindow,
+      }"
+    >
+      <div v-if="!dialogueEnded" ref="chatWindow">
+        <div id="messageListContainer" class="container__message-list">
+          <div class="nav__toolbar">
+            <b>{{ dialogName ? dialogName : 'Без имени' }}</b>
+            <button @click="onClose()" class="button">
+              Завершить беседу
+              <done-icon></done-icon>
+            </button>
+          </div>
+          <div
+            id="listgroup-ex"
+            ref="messageList"
+            style="text-align: center;position:relative; overflow-y:auto;"
+          >
+            <b-button v-if="messageListTemplate != ''" @click="loadMore()">
+              Загрузить еще
+            </b-button>
+            <div class="chat">
+              <div class="chat-container">
+                <div class="conversation">
+                  <div class="conversation-container">
+                    <div
+                      v-for="(item, idx) in messageListTemplate"
+                      :key="idx"
+                      :class="{
+                        received: item.by === 'input',
+                        sent: item.by !== 'input',
+                      }"
+                      class="message"
+                    >
+                      <div v-if="item.data.text">
+                        {{ item.data.text }}
+                      </div>
+                      <div v-else-if="item.data.files">
+                        <div v-if="getFooFileType(item.data) != 'image'">
                           <div
-                            v-for="(item, idx) in messageListTemplate"
-                            :key="idx"
+                            style="display: flex; width: 100%; justify-content: space-between;"
                           >
-                            <div
-                              v-if="item.by == 'input'"
-                              class="message received"
-                            >
-                              <div v-if="item.data.text != ''">
-                                {{ item.data.text }}
-                              </div>
-                              <div v-else-if="item.data.file != ''">
-                                <div
-                                  v-if="getFooFileType(item.data) != 'image'"
-                                >
-                                  <div class="">
-                                    <a
-                                      target="_blank"
-                                      :href="getFooFile(item.data)"
-                                      >Файл</a
-                                    >
-                                  </div>
-                                </div>
-
-                                <img
-                                  class="message__image"
-                                  alt="Image message"
-                                  v-else
-                                  :src="getFooFile(item.data)"
-                                />
-                              </div>
-                              <div v-else-if="item.data.sendedFile != ''">
-                                <img
-                                  alt="Image message"
-                                  class="message__image"
-                                  :src="item.data.sendedFile"
-                                />
-
-                                <img
-                                  class="message__image"
-                                  alt="Image message"
-                                  :src="item.data.file"
-                                />
-                              </div>
-                              <div v-if="item.buttons != ''">
-                                <b-button-group
-                                  v-for="(key, idx) in item.buttons"
-                                  :key="idx"
-                                >
-                                  <b-button @click="console.log(key.action)">{{
-                                    key.text
-                                  }}</b-button>
-                                </b-button-group>
-                              </div>
-
-                              <span class="metadata">
-                                <span class="time">{{
-                                  getDate(item.data.date)
-                                }}</span>
-                                <!--                              <span class="tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" id="msg-dblcheck-ack" x="2063" y="2076"><path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.88a.32.32 0 0 1-.484.032l-.358-.325a.32.32 0 0 0-.484.032l-.378.48a.418.418 0 0 0 .036.54l1.32 1.267a.32.32 0 0 0 .484-.034l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.88a.32.32 0 0 1-.484.032L1.892 7.77a.366.366 0 0 0-.516.005l-.423.433a.364.364 0 0 0 .006.514l3.255 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z" fill="#4fc3f7"/></svg></span>-->
-                              </span>
-                            </div>
-
-                            <div v-else class="message sent">
-                              <div v-if="item.data.text != ''">
-                                {{ item.data.text }}
-                              </div>
-                              <div v-else-if="item.data.file != ''">
-                                <div
-                                  v-if="getFooFileType(item.data) != 'image'"
-                                >
-                                  <div
-                                    class="d-flex w-100 justify-content-between"
-                                  >
-                                    <a
-                                      target="_blank"
-                                      :href="getFooFile(item.data)"
-                                      >Файл</a
-                                    >
-                                  </div>
-                                </div>
-
-                                <img
-                                  alt="Image message"
-                                  class="message__image"
-                                  v-else
-                                  :src="getFooFile(item.data)"
-                                />
-                              </div>
-                              <div v-else-if="item.data.sendedFile != ''">
-                                <img
-                                  alt="Image message"
-                                  class="message__image"
-                                  :src="item.data.sendedFile"
-                                />
-                              </div>
-                              <span class="metadata">
-                                <span class="time">{{
-                                  getDate(item.data.date)
-                                }}</span>
-                              </span>
-                            </div>
+                            <a :href="getFooFile(item.data)">Файл</a>
                           </div>
                         </div>
+                        <img
+                          v-else
+                          class="message__image"
+                          alt="Image message"
+                          :src="getFooFile(item.data)"
+                        />
                       </div>
+                      <div v-else-if="item.data.sendedFile">
+                        <img
+                          alt="Image"
+                          class="message__image"
+                          :src="item.data.sendedFile"
+                        />
+                      </div>
+                      <div v-if="item.buttons">
+                        <div v-for="(key, idx) in item.buttons" :key="idx">
+                          <button @click="console.log(key.action)">
+                            {{ key.text }}
+                          </button>
+                        </div>
+                      </div>
+                      <span class="metadata">
+                        <span class="time">{{ getDate(item.data.date) }}</span>
+                        <!--                              <span class="tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" id="msg-dblcheck-ack" x="2063" y="2076"><path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.88a.32.32 0 0 1-.484.032l-.358-.325a.32.32 0 0 0-.484.032l-.378.48a.418.418 0 0 0 .036.54l1.32 1.267a.32.32 0 0 0 .484-.034l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.88a.32.32 0 0 1-.484.032L1.892 7.77a.366.366 0 0 0-.516.005l-.423.433a.364.364 0 0 0 .006.514l3.255 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z" fill="#4fc3f7"/></svg></span>-->
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
-              <b-row
-                v-if="showActions == 'true'"
-                no-gutters
-                class="text-center pt-2 pb-2"
-              >
-                <b-col v-for="(key, idx) in buttonsList" :key="idx">
-                  <button
-                    @click="onSendCommand(key.action)"
-                    class="button"
-                    style="white-space: nowrap;white-space: nowrap; width: 160px;overflow: hidden;text-overflow: ellipsis;"
-                  >
-                    <small>{{ key.text }}</small>
-                  </button>
-                </b-col>
-              </b-row>
-              <div class="input__group">
-                <input
-                  style="display: none"
-                  id="files"
-                  type="file"
-                  name="file"
-                  ref="fileInput"
-                  :multiple="false"
-                  @change="detectFiles($event)"
-                />
-                <button
-                  v-if="dataSend.file == null"
-                  style="color: #4149F2"
-                  @click="onPickFile('fileInput')"
-                >
-                  <paper-clip-icon />
-                </button>
-                <button v-else @click="onPickFile('fileInput')">
-                  <paper-clip-icon />
-                </button>
-
-                <textarea
-                  required
-                  v-model="dataSend.text"
-                  type="text"
-                  placeholder="Сообщение"
-                ></textarea>
-
-                <button style="color: #4149F2" @click="onSend()">
-                  <b>Отправить</b>
-                </button>
-              </div>
-              <button
-                v-if="dialogId != null"
-                id="btn__video-call"
-                @click="sendVideoCall()"
-                class="button button__big"
-              >
-                Предложить звонок
-                <open-in-new-icon />
-              </button>
-            </div>
-            <div v-if="dialogIsNull" class="alert__success">
-              <span>
-                Беседа завершена
-              </span>
-              <done-icon></done-icon>
             </div>
           </div>
         </div>
-      </div>
-      <button
-        id="fab"
-        @click="showFabWindow = !showFabWindow"
-        class="sc-launcher"
-      >
-        <span>{{ dialogName || 'Без имени' }}</span>
-        <cancel-icon />
-      </button>
-    </div>
-
-    <div ref="messageContainer" v-else>
-      <div style="padding: 0;elevation: 0;">
-        <div class="elevation-0" no-body>
-          <div id="messageListContainer" class="container__message-list">
-            <div class="nav__toolbar">
-              <b>{{ dialogName || 'Без имени' }}</b>
-              <button @click="onClose()" class="button">
-                Завершить беседу
-                <done-icon></done-icon>
-              </button>
-
-              <!--              <b-button @click="onClose()" variant="warning" class="mb-2">-->
-              <!--                Завершить беседу-->
-              <!--              </b-button>-->
-            </div>
-            <div
-              id="listgroup-ex"
-              style="position:relative; overflow-y:auto;"
-              class="text-center"
+        <div
+          v-if="showActions == 'true'"
+          no-gutters
+          class="text-center pt-2 pb-2"
+        >
+          <div v-for="(key, idx) in buttonsList" :key="idx">
+            <button
+              @click="onSendCommand(key.action)"
+              class="button"
+              style="white-space: nowrap;white-space: nowrap; width: 160px;overflow: hidden;text-overflow: ellipsis;"
             >
-              <!--                    <b-button @click="loadMore()" v-if="messageListTemplate!=''">-->
-              <!--                      Загрузить еще-->
-              <!--                    </b-button>-->
-              <div class="chat">
-                <div class="chat-container">
-                  <div class="conversation">
-                    <div class="conversation-container">
-                      <div
-                        v-for="(item, idx) in messageListTemplate"
-                        :key="idx"
-                      >
-                        <div v-if="item.by == 'input'" class="message received">
-                          <div v-if="item.data.text != ''">
-                            {{ item.data.text }}
-                          </div>
-                          <div v-else-if="item.data.file != ''">
-                            <div v-if="getFooFileType(item.data) != 'image'">
-                              <div class="d-flex w-100 justify-content-between">
-                                <a target="_blank" :href="getFooFile(item.data)"
-                                  >Файл</a
-                                >
-                              </div>
-                            </div>
-
-                            <img
-                              alt="Image message"
-                              class="message__image"
-                              v-else
-                              :src="getFooFile(item.data)"
-                            />
-                          </div>
-                          <div v-else-if="item.data.sendedFile != ''">
-                            <img
-                              alt="Image message"
-                              class="message__image"
-                              :src="item.data.sendedFile"
-                            />
-
-                            <img
-                              fluid-grow
-                              alt="Fluid-grow image"
-                              :src="item.data.file"
-                            />
-                          </div>
-                          <div v-if="item.buttons != ''">
-                            <div
-                              class="button__group"
-                              v-for="(key, idx) in item.buttons"
-                              :key="idx"
-                            >
-                              <button @click="console.log(key.action)">
-                                {{ key.text }}
-                              </button>
-                            </div>
-                          </div>
-
-                          <span class="metadata">
-                            <span class="time">{{
-                              getDate(item.data.date)
-                            }}</span>
-                            <!--                              <span class="tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" id="msg-dblcheck-ack" x="2063" y="2076"><path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.88a.32.32 0 0 1-.484.032l-.358-.325a.32.32 0 0 0-.484.032l-.378.48a.418.418 0 0 0 .036.54l1.32 1.267a.32.32 0 0 0 .484-.034l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.88a.32.32 0 0 1-.484.032L1.892 7.77a.366.366 0 0 0-.516.005l-.423.433a.364.364 0 0 0 .006.514l3.255 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z" fill="#4fc3f7"/></svg></span>-->
-                          </span>
-                        </div>
-
-                        <div v-else class="message sent">
-                          <div v-if="item.data.text">
-                            {{ item.data.text }}
-                          </div>
-                          <div v-else-if="item.data.file">
-                            <div v-if="getFooFileType(item.data) != 'image'">
-                              <div>
-                                <a target="_blank" :href="getFooFile(item.data)"
-                                  >Файл</a
-                                >
-                              </div>
-                            </div>
-
-                            <img
-                              class="message__image"
-                              alt="Image message"
-                              v-else
-                              :src="getFooFile(item.data)"
-                            />
-                          </div>
-                          <div v-else-if="item.data.sendedFile">
-                            <img
-                              alt="Image message"
-                              :src="item.data.sendedFile"
-                            />
-                          </div>
-                          <span class="metadata">
-                            <span class="time">{{
-                              getDate(item.data.date)
-                            }}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <small>{{ key.text }}</small>
+            </button>
           </div>
-          <b-row
-            v-show="showActions == 'true'"
-            no-gutters
-            class="text-center pt-2 pb-2"
-          >
-            <b-col v-for="(key, idx) in buttonsList" :key="idx">
-              <button
-                @click="onSendCommand(key.action)"
-                class="button"
-                style="white-space: nowrap;white-space: nowrap; width: 160px;overflow: hidden;text-overflow: ellipsis;"
-              >
-                <small>{{ key.text }}</small>
-              </button>
-            </b-col>
-          </b-row>
         </div>
         <div class="input__group">
           <input
-            style="display: none"
             id="files"
-            type="file"
-            name="file"
             ref="fileInput"
+            type="file"
             :multiple="false"
+            style="display: none"
             @change="detectFiles($event)"
           />
           <button
-            v-if="!dataSend.file"
-            style="color: #4149F2"
+            :style="{ color: !dataSend.file ? '#4149F2' : 'inherit' }"
             @click="onPickFile('fileInput')"
           >
-            <paper-clip-icon />
-          </button>
-          <button v-else @click="onPickFile('fileInput')">
             <paper-clip-icon />
           </button>
 
           <textarea
             v-model="dataSend.text"
-            required
             type="text"
             placeholder="Сообщение"
+            required
           ></textarea>
 
           <button style="color: #4149F2" @click="onSend()">
@@ -402,7 +127,7 @@
         </div>
         <button
           id="btn__video-call"
-          v-if="dialogId"
+          v-if="dialogId != null"
           @click="sendVideoCall()"
           class="button button__big"
         >
@@ -410,7 +135,22 @@
           <open-in-new-icon />
         </button>
       </div>
+      <div v-if="dialogueEnded" class="alert__success">
+        <span>
+          Беседа завершена
+        </span>
+        <done-icon></done-icon>
+      </div>
     </div>
+    <button
+      v-if="typeElement === 'widget'"
+      id="fab"
+      @click="showFabWindow = !showFabWindow"
+      class="sc-launcher"
+    >
+      <span>{{ dialogName || 'Без имени' }}</span>
+      <cancel-icon />
+    </button>
   </div>
 </template>
 
@@ -432,7 +172,7 @@ export default {
   data() {
     return {
       showActions: this.$root.$el.parentElement.dataset.show_actions | false,
-      dialogIsNull: false,
+      dialogueEnded: false,
       buttonsList: [],
       showFabWindow: false,
       dialogToken: this.$root.$el.parentElement.dataset.dtoken, // "401cf075-225e-419a-9a4a-80db8bc1d32b",
@@ -1417,7 +1157,7 @@ export default {
       if (this.ws.readyState == WebSocket.OPEN) {
         this.ws.send('{"command":"close"}');
         localStorage.removeItem('chdtoken');
-        this.dialogIsNull = true;
+        this.dialogueEnded = true;
       } else {
         var ids = {
           dialogToken: this.dialogToken,
@@ -1428,7 +1168,7 @@ export default {
           .post('http://automessager.biz/api/virtual/close/', ids)
           .then((res) => {
             localStorage.removeItem('chdtoken');
-            this.dialogIsNull = true;
+            this.dialogueEnded = true;
           });
       }
     },
@@ -1486,15 +1226,6 @@ export default {
 </script>
 
 <style>
-body {
-  padding: 0px;
-  margin: 0px;
-}
-
-* {
-  font-family: Avenir Next, Helvetica Neue, Helvetica, sans-serif;
-}
-
 .fab-wrapper {
   z-index: 999;
 }
@@ -1725,6 +1456,9 @@ body {
 }
 
 .sc-launcher {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 0 20px;
   color: black;
   background-color: white;
@@ -1801,7 +1535,10 @@ body {
   right: 25px;
   bottom: 20px;
   box-sizing: border-box;
-  box-shadow: 0px 7px 40px 2px rgba(148, 149, 150, 0.1);
+  /*box-shadow: 0px 7px 40px 2px rgba(148, 149, 150, 0.1); */
+  margin-bottom: 80px;
+  padding: 0;
+  box-shadow: 0px 0px 27px 1.5px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1847,6 +1584,10 @@ body {
 }
 
 .button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
   margin: 8px;
   border-radius: 8px;
   background-color: rgb(65, 73, 242);
