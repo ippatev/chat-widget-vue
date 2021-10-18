@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="bg-red-500">
     <div v-if="typeElement == 'widget'">
       <div style="width:335px">
         <div
@@ -416,17 +416,14 @@
 
 <script>
 import axios from 'axios';
-import MenuIcon from 'vue-material-design-icons/Menu.vue';
-import MessageIcon from 'vue-material-design-icons/MessageText.vue';
-import CancelIcon from 'vue-material-design-icons/Close.vue';
-import PaperClipIcon from 'vue-material-design-icons/Paperclip.vue';
-import DoneIcon from 'vue-material-design-icons/Check.vue';
-import OpenInNewIcon from 'vue-material-design-icons/OpenInNew.vue';
+
+import DoneIcon from './components/Icons/DoneIcon.vue';
+import PaperClipIcon from './components/Icons/PaperClip.vue';
+import CancelIcon from './components/Icons/CancelIcon.vue';
+import OpenInNewIcon from './components/Icons/OpenInNewIcon.vue';
 
 export default {
   components: {
-    MenuIcon,
-    MessageIcon,
     CancelIcon,
     PaperClipIcon,
     DoneIcon,
@@ -492,10 +489,8 @@ export default {
   created() {
     if (this.dialogId) {
       this.getDialogMessages();
-      console.log('dialog');
     } else if (this.channelId) {
       this.getChannelMessages();
-      console.log('channel');
     }
 
     global.root = this;
@@ -863,38 +858,12 @@ export default {
       var time = date + ' ' + month;
       return time;
     },
-    getUTCDate: function(timestamp) {
-      var a = new Date(timestamp * 1000);
-      var months = [
-        'янв',
-        'фев',
-        'мар',
-        'апр',
-        'май',
-        'июн',
-        'июл',
-        'авг',
-        'сен',
-        'окт',
-        'ноя',
-        'дек',
-      ];
-      var year = a.getFullYear();
-      var month = months[a.getMonth()];
-      var date = a.getDate();
-      var hour = a.getHours();
-      var min = a.getMinutes();
-      var sec = a.getSeconds();
-      var time = date + ' ' + month;
-      return time;
-    },
     /*
     onScrollLog(e) {
       if (e.target.scrollTop == 0) {
         this.loadMore();
       }
     },
-    */
     OnScroll: function() {
       // if (this.typeElement == "widget") {
       //   var container = this.$refs.messageList;
@@ -904,6 +873,7 @@ export default {
       //   setTimeout(() => (container.scrollTop = container.scrollHeight), 500);
       // }
     },
+    */
     setCommands: function(json) {
       this.commands = JSON.parse(json);
       //json=[{text:"Создать заявку", id:"fdgd"},{text:"Создать заявку", id:"fdgd"},{text:"Создать заявку", id:"fdgd"},]
@@ -1242,7 +1212,7 @@ export default {
               }
             }
 
-            this.OnScroll();
+            //this.OnScroll();
           }
         } else {
           this.server_partion_count = message.partionCount;
@@ -1258,7 +1228,6 @@ export default {
         this.array_ws[this.channelId] = Object(this.ws);
       }
     },
-
     dialogReturn() {
       this.dialog.show = false;
       this.dialog.title = null;
@@ -1280,6 +1249,7 @@ export default {
         this.dialogReturn();
       }
     },
+    /*
     updateLastMessage: function(message) {
       firebase_main
         .database()
@@ -1303,6 +1273,7 @@ export default {
             .update({ last_message_text: message });
         });
     },
+    */
     getDialogItemColor: function(itemId) {
       var valueColor = '';
       if (itemId == this.selectedDialog.id) {
@@ -1384,8 +1355,8 @@ export default {
       // console.log("OPEN_WEBSOCKET")
     },
     getChannelMessages() {
-      if (this.$ls.get('chdtoken')) {
-        this.ch_dialogToken = this.$ls.get('chdtoken');
+      if (localStorage.getItem('chdtoken')) {
+        this.ch_dialogToken = JSON.parse(localStorage.getItem('chdtoken'));
 
         const tokenids = {
           token: this.token,
@@ -1422,7 +1393,10 @@ export default {
           .then((response) => {
             console.log(response);
 
-            this.$ls.set('chdtoken', response.data.dialogToken);
+            localStorage.setItem(
+              'chdtoken',
+              JSON.stringify(response.data.dialogToken)
+            );
             //console.log('data', response.data.link);
             this.openWebSocket(response.data.reconnect, null, 'open');
             // client.js
@@ -1442,7 +1416,7 @@ export default {
     onClose: function() {
       if (this.ws.readyState == WebSocket.OPEN) {
         this.ws.send('{"command":"close"}');
-        this.$ls.remove('chdtoken');
+        localStorage.removeItem('chdtoken');
         this.dialogIsNull = true;
       } else {
         var ids = {
@@ -1453,7 +1427,7 @@ export default {
         axios
           .post('http://automessager.biz/api/virtual/close/', ids)
           .then((res) => {
-            this.$ls.remove('chdtoken');
+            localStorage.removeItem('chdtoken');
             this.dialogIsNull = true;
           });
       }
@@ -1506,7 +1480,7 @@ export default {
    * @todo
    */
   updated() {
-    // this.getListCommands();
+    //this.getListCommands();
   },
 };
 </script>
@@ -1818,7 +1792,7 @@ body {
 }
 
 /**
-* 20vh = 20% ? 
+* 20vh = 20% ?
  */
 .sc-chat-window {
   width: 370px;

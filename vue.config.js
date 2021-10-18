@@ -1,18 +1,17 @@
-const webpack = require('webpack')
+const webpack = require('webpack');
 module.exports = {
   devServer: {
-    port: 8081
+    port: 8081,
   },
   configureWebpack: {
     plugins: [
       new webpack.optimize.LimitChunkCountPlugin({
-        maxChunks: 1
-      })
-    ]
+        maxChunks: 1,
+      }),
+    ],
   },
-  chainWebpack:
-    config => {
-      config.optimization.delete('splitChunks')
-    },
-  filenameHashing: false
-}
+  chainWebpack: (config) => {
+    config.optimization.delete('splitChunks');
+  },
+  filenameHashing: false,
+};
