@@ -8,7 +8,6 @@ import 'document-register-element/build/document-register-element';
 import { BootstrapVue } from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
-import 'vue-material-design-icons/styles.css';
 
 Vue.use(BootstrapVue);
 Vue.use(vueCustomElement);
