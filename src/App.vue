@@ -417,12 +417,15 @@
 <script>
 import axios from 'axios';
 
-import CancelIcon from 'vue-material-design-icons/Close.vue';
-import PaperClipIcon from 'vue-material-design-icons/Paperclip.vue';
+//import CancelIcon from 'vue-material-design-icons/Close.vue';
+//import PaperClipIcon from 'vue-material-design-icons/Paperclip.vue';
 //import DoneIcon from 'vue-material-design-icons/Check.vue';
-import OpenInNewIcon from 'vue-material-design-icons/OpenInNew.vue';
+//import OpenInNewIcon from 'vue-material-design-icons/OpenInNew.vue';
 
 import DoneIcon from './components/Icons/DoneIcon.vue';
+import PaperClipIcon from './components/Icons/PaperClip.vue';
+import CancelIcon from './components/Icons/CancelIcon.vue';
+import OpenInNewIcon from './components/Icons/OpenInNewIcon.vue';
 
 export default {
   components: {
@@ -1214,7 +1217,7 @@ export default {
               }
             }
 
-            this.OnScroll();
+            //this.OnScroll();
           }
         } else {
           this.server_partion_count = message.partionCount;
@@ -1482,7 +1485,7 @@ export default {
    * @todo
    */
   updated() {
-    // this.getListCommands();
+    //this.getListCommands();
   },
 };
 </script>
