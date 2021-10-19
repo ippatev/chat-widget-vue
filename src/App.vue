@@ -19,14 +19,7 @@
               <done-icon></done-icon>
             </button>
           </div>
-          <div
-            id="listgroup-ex"
-            ref="messageList"
-            style="text-align: center;position:relative; overflow-y:auto;"
-          >
-            <b-button v-if="messageListTemplate != ''" @click="loadMore()">
-              Загрузить еще
-            </b-button>
+          <div ref="messageList" style="position:relative; overflow-y:auto;">
             <div class="chat">
               <div class="chat-container">
                 <div class="conversation">
@@ -40,9 +33,7 @@
                       }"
                       class="message"
                     >
-                      <div v-if="item.data.text">
-                        {{ item.data.text }}
-                      </div>
+                      <div v-if="item.data.text" v-html="item.data.text" />
                       <div v-else-if="item.data.files">
                         <div v-if="getFooFileType(item.data) != 'image'">
                           <div
@@ -74,7 +65,6 @@
                       </div>
                       <span class="metadata">
                         <span class="time">{{ getDate(item.data.date) }}</span>
-                        <!--                              <span class="tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" id="msg-dblcheck-ack" x="2063" y="2076"><path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.88a.32.32 0 0 1-.484.032l-.358-.325a.32.32 0 0 0-.484.032l-.378.48a.418.418 0 0 0 .036.54l1.32 1.267a.32.32 0 0 0 .484-.034l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.88a.32.32 0 0 1-.484.032L1.892 7.77a.366.366 0 0 0-.516.005l-.423.433a.364.364 0 0 0 .006.514l3.255 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z" fill="#4fc3f7"/></svg></span>-->
                       </span>
                     </div>
                   </div>
@@ -84,15 +74,14 @@
           </div>
         </div>
         <div
-          v-if="showActions == 'true'"
-          no-gutters
-          class="text-center pt-2 pb-2"
+          v-if="showActions"
+          style="text-align: center; padding-top: 16px; padding-bottom: 16px;"
         >
           <div v-for="(key, idx) in buttonsList" :key="idx">
             <button
               @click="onSendCommand(key.action)"
               class="button"
-              style="white-space: nowrap;white-space: nowrap; width: 160px;overflow: hidden;text-overflow: ellipsis;"
+              style="width: 160px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"
             >
               <small>{{ key.text }}</small>
             </button>
@@ -100,7 +89,6 @@
         </div>
         <div class="input__group">
           <input
-            id="files"
             ref="fileInput"
             type="file"
             :multiple="false"
@@ -116,7 +104,7 @@
 
           <textarea
             v-model="dataSend.text"
-            type="text"
+            @keyup.ctrl.enter="onSend()"
             placeholder="Сообщение"
             required
           ></textarea>
@@ -144,7 +132,6 @@
     </div>
     <button
       v-if="typeElement === 'widget'"
-      id="fab"
       @click="showFabWindow = !showFabWindow"
       class="sc-launcher"
     >
@@ -171,41 +158,24 @@ export default {
   },
   data() {
     return {
-      showActions: this.$root.$el.parentElement.dataset.show_actions | false,
+      root: null,
       dialogueEnded: false,
-      buttonsList: [],
       showFabWindow: false,
-      dialogToken: this.$root.$el.parentElement.dataset.dtoken, // "401cf075-225e-419a-9a4a-80db8bc1d32b",
-      ch_dialogToken: null,
-      dialogId: this.$root.$el.parentElement.dataset.dialog, //"5d38153f0e9ed01d7c830ca7"
-      token: this.$root.$el.parentElement.dataset.token,
-      channelId: this.$root.$el.parentElement.dataset.channel,
-      typeElement: this.$root.$el.parentElement.dataset.type,
-      urlOnError: this.$root.$el.parentElement.dataset.urlonerror,
-      connection: null,
-      participants: [],
-      titleImageUrl:
-        'https://a.slack-edge.com/66f9/img/avatars-teams/ava_0001-34.png',
-      messageList: [],
-      urlOnErrorEvent: 'https://ic.myams.biz/',
-      commands: [],
-      dialogDelete: false,
-      menuItems: [{ id: 'del', title: 'Закрыть диалог' }],
-      fileFoo: [],
       fileAttached: false,
       file: null,
       ws: null,
       dialogName: null,
+      messageList: [],
+      commands: [],
+      fileFoo: [],
+      buttonsList: [],
       array_ws: [],
+      messageListTemplate: [],
       dialog: {
         show: false,
         title: null,
         text: null,
         type: null,
-      },
-      dList: {
-        show: false,
-        title: null,
       },
       dataSend: {
         text: null,
@@ -213,16 +183,18 @@ export default {
         file: null,
         file64: null,
       },
-      dialogsList: [],
-      newDialogList: [],
-      messageListTemplate: [],
-      newMessageList: [],
-      selectedDialog: [],
+      showActions: this.$root.$el.parentElement.dataset.show_actions | false,
+      dialogToken: this.$root.$el.parentElement.dataset.dtoken, // "401cf075-225e-419a-9a4a-80db8bc1d32b",
+      dialogId: this.$root.$el.parentElement.dataset.dialog, //"5d38153f0e9ed01d7c830ca7"
+      token: this.$root.$el.parentElement.dataset.token,
+      channelId: this.$root.$el.parentElement.dataset.channel,
+      typeElement: this.$root.$el.parentElement.dataset.type,
+      urlOnError: this.$root.$el.parentElement.dataset.urlonerror,
+      urlOnErrorEvent: 'https://ic.myams.biz/',
       server_message_count: 0,
       server_partion_count: 0,
       local_partion_count: 0,
       server_message_array: [],
-      root: null,
     };
   },
 
@@ -237,19 +209,18 @@ export default {
   },
   methods: {
     async sendVideoCall() {
-      let uuid = await this.get_uuid();
+      const uuid = await this.get_uuid();
+      const url = `https://test-app-ff08f.firebaseapp.com/${uuid}`;
 
-      /**
-       * @todo DRY
-       */
-      window.open(`https://test-app-ff08f.firebaseapp.com/${uuid}`, '_blank');
       this.onSendCommand(
-        `*перейдите по ссылку чтобы присоединиться к видеозвонку: https://test-app-ff08f.firebaseapp.com/${uuid}`
+        `*перейдите по ссылку чтобы присоединиться к видеозвонку: ${url}`
       );
+
+      window.open(url, '_blank');
     },
     get_uuid() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        var r = (Math.random() * 16) | 0,
+        const r = (Math.random() * 16) | 0,
           v = c == 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
       });
@@ -259,98 +230,18 @@ export default {
      */
     loadMore() {
       var array = [];
+
+      /*
       const res = this.messageList.filter(
         (v) => v.id == this.local_partion_count
       );
+      */
 
-      for (let key in res) {
-        array.push(res[key].messages);
+      for (let message of this.messageList) {
+        array.push(message.messages);
       }
       this.messageListTemplate = [...array, ...this.messageListTemplate];
-      this.local_partion_count--;
-    },
-    /**
-     * @todo needs to refactor
-     */
-    deleteDialog: function(token, dialogId) {
-      firebase_main
-        .database()
-        .ref(token)
-        .child('dialogs')
-        .once('value', function(snapshot) {})
-        .then((snap) => {
-          var selectedDialog = null;
-
-          for (let key in snap.val()) {
-            if (snap.val()[key].father_dialog_id == dialogId) {
-              selectedDialog = key;
-            }
-          }
-
-          firebase_main
-            .database()
-            .ref(token)
-            .child('dialogs')
-            .child(selectedDialog)
-            .remove();
-        });
-    },
-    /**
-     * @todo needs to refactor
-     */
-    getNewDialog: function() {
-      var arrayND = [];
-      firebase_main
-        .database()
-        .ref(this.token)
-        .once('value', function() {})
-        .then((res) => {
-          for (let key in res.val().newDialog) {
-            axios
-              .get(
-                'https://automessager.biz/api/client/info/' +
-                  res.val().newDialog[key].id +
-                  '/' +
-                  this.token +
-                  '/'
-              )
-              .then((snap) => {
-                arrayND.push({
-                  id: res.val().newDialog[key].id,
-                  avatar: snap.data.info['imageProfile'],
-                  name: snap.data.info['name'],
-                  owner: res.val().newDialog[key].owner,
-                  role: {
-                    id: res.val().newDialog[key].roleId,
-                    name: res.val().newDialog[key].role,
-                  },
-                  urlError: res.val().newDialog[key].urlError,
-                  Dkey: key,
-                });
-              })
-              .catch((err) => console.log(err));
-          }
-          this.newDialogList = arrayND;
-        });
-    },
-    /**
-     * @todo needs to refactor
-     */
-    getNewMessage: function(id) {
-      var arrayR = [];
-
-      this.newMessageList.forEach(function(snapshot) {
-        if (snapshot.id == id) {
-          arrayR.push(snapshot.count);
-        }
-      });
-
-      return arrayR.toString();
-    },
-    MenuOnClick: function(id) {
-      if (id == 'del') {
-        this.dialogDelete = true;
-      }
+      //this.local_partion_count--;
     },
     getItemFile(file) {
       let fileId = file.files;
@@ -368,19 +259,12 @@ export default {
       }
     },
     getFooFile: function(file) {
-      /**
-       * @todo why toString() ?
-       */
       return this.fileFoo
         .filter((x) => x.id === file.id)
         .map((x) => x.url)
         .toString();
     },
     getFooFileType: function(file) {
-      // let id = file.files;
-      /**
-       * @todo  filter, map ?
-       */
       return this.fileFoo
         .filter((x) => x.id === file.id)
         .map((x) => x.type)
@@ -390,7 +274,7 @@ export default {
       var text = this.dataSend.text;
       var file = this.dataSend.file;
 
-      if (text != null && file != null) {
+      if (text && file) {
         if (this.ws.readyState == WebSocket.CLOSED) {
           this.openWebSocket(
             this.ws.url,
@@ -398,29 +282,38 @@ export default {
           );
           this.openWebSocket(
             this.ws.url,
-            '{"command":"message", "text":"' + text + '"}'
+            '{"command":"message", "text":"' +
+              text.replace(/\n/g, '<br />') +
+              '"}'
           );
           this.nulling(2);
         } else if (this.ws.readyState == WebSocket.OPEN) {
           this.ws.send('{"command":"file", "file":"' + file + '"}');
           this.ws.send(
-            '{"command":"message", "text":"' + this.dataSend.text + '"}'
+            '{"command":"message", "text":"' +
+              text.replace(/\n/g, '<br />') +
+              '"}'
           );
           this.nulling(2);
         }
-      } else if (text != null) {
-        console.log('text');
+      } else if (text) {
         if (this.ws.readyState == WebSocket.CLOSED) {
           this.openWebSocket(
             this.ws.url,
-            '{"command":"message", "text":"' + text + '"}'
+            '{"command":"message", "text":"' +
+              text.replace(/\n/g, '<br />') +
+              '"}'
           );
           this.nulling(1, 'text');
         } else if (this.ws.readyState == WebSocket.OPEN) {
-          this.ws.send('{"command":"message", "text":"' + text + '"}');
+          this.ws.send(
+            '{"command":"message", "text":"' +
+              text.replace(/\n/g, '<br />') +
+              '"}'
+          );
           this.nulling(1, 'text');
         }
-      } else if (file != null) {
+      } else if (file) {
         if (this.ws.readyState == WebSocket.CLOSED) {
           this.openWebSocket(
             this.ws.url,
@@ -438,16 +331,16 @@ export default {
      */
     nulling: function(type, input) {
       if (this.dialogId == null) {
-        var message_random_id = Math.random() * (1000 - 1) + 1;
+        const message_random_id = this.get_uuid();
         if (type === 1) {
-          if (this.dataSend.text != null) {
+          if (this.dataSend.text) {
             this.messageListTemplate = [
               ...this.messageListTemplate,
               {
                 id: message_random_id,
                 by: 'sended',
                 data: {
-                  text: this.dataSend.text,
+                  text: this.dataSend.text.replace(/\n/g, '<br />'),
                   file: '',
                   type: 'sended',
                   date: new Date(),
@@ -548,7 +441,7 @@ export default {
               id: message_random_id,
               by: 'sended',
               data: {
-                text: this.dataSend.text,
+                text: this.dataSend.text.replace(/\n/g, '<br />'),
                 file: '',
                 type: 'sended',
                 date: new Date(),
@@ -598,191 +491,15 @@ export default {
       var time = date + ' ' + month;
       return time;
     },
-    /*
-    onScrollLog(e) {
-      if (e.target.scrollTop == 0) {
-        this.loadMore();
-      }
-    },
-    OnScroll: function() {
-      // if (this.typeElement == "widget") {
-      //   var container = this.$refs.messageList;
-      //   setTimeout(() => (container.scrollTop = container.scrollHeight), 500);
-      // } else {
-      //   var container = this.$refs.messageContainer;
-      //   setTimeout(() => (container.scrollTop = container.scrollHeight), 500);
-      // }
-    },
-    */
     setCommands: function(json) {
-      this.commands = JSON.parse(json);
       //json=[{text:"Создать заявку", id:"fdgd"},{text:"Создать заявку", id:"fdgd"},{text:"Создать заявку", id:"fdgd"},]
+
+      this.commands = JSON.parse(json);
     },
     onCommandsResult: function(idMenu, idDialog) {
       document.getElementById('onCommand').setAttribute('value', idMenu);
       document.getElementById('onCommand').dataset.dialogId = idDialog;
       document.getElementById('onCommand').click();
-    },
-    createDialog(token, dialogId, OwnerId, urlError, role, Dkey) {
-      console.log(token, dialogId, OwnerId, urlError, role, Dkey);
-      firebase_main
-        .database()
-        .ref(token)
-        .once('value', function(snap) {})
-        .then((res) => {
-          if (res.val() != null) {
-            console.log('CREATE');
-            const ids = {
-              token: token,
-              dialogId: dialogId,
-              urlOnErrorEvent: urlError,
-            };
-
-            // firebase_main.database().ref(token).child("dialogs").orderByChild('father_dialog_id').equalTo(dialogId).once("value", function (snapshot) {
-            //     console.log(snapshot)
-            // }).then((res)=>{
-            //     console.log(res)
-            // }).catch((err)=>{
-            //
-            // })
-
-            axios
-              .post('https://automessager.biz/api/virtual/create/', ids)
-              .then((response) => {
-                console.log(response);
-                document
-                  .getElementById('onCreateDialog')
-                  .setAttribute('value', response.data.dialogId);
-                document.getElementById('onCreateDialog').click();
-
-                this.dialogsList.push({
-                  father_dialog_id: dialogId,
-                  avatar: response.data.info['imageProfile'],
-                  dialogOwnerId: OwnerId,
-                  id: response.data.dialogId,
-                  last_message: 'message',
-                  last_message_date: '',
-                  role: role,
-                  name: response.data.info['name'],
-                  phone: response.data.info['uid'],
-                  token: response.data.dialogToken,
-                });
-
-                console.log(token);
-                firebase_main
-                  .database()
-                  .ref(token)
-                  .child('dialogs')
-                  .push({
-                    father_dialog_id: dialogId,
-                    avatar: response.data.info['imageProfile'],
-                    dialogOwnerId: OwnerId,
-                    id: response.data.dialogId,
-                    last_message: 'message',
-                    last_message_date: '',
-                    role: role,
-                    name: response.data.info['name'],
-                    phone: response.data.info['uid'],
-                    token: response.data.dialogToken,
-                  })
-                  .then((res) => {
-                    // var arrayD = [];
-                    // var arrayN = [];
-
-                    firebase_main
-                      .database()
-                      .ref(token)
-                      .child('newDialog')
-                      .child(Dkey)
-                      .remove();
-                    // window.location.reload()
-                  })
-                  .catch((err) => console.log(err));
-
-                // client.js
-                //const WebSocket = require('ws')
-                //const url = response.data.link
-              })
-              .catch(function(error) {
-                // console.log(error);
-              });
-          } else {
-            //Если уже сущестует НЕ TokenToken
-            const ids = {
-              token: token,
-              dialogId: dialogId,
-              urlOnErrorEvent: urlError,
-            };
-            //
-            // const headers = {
-            //   'Access-Control-Allow-Origin': '*'
-            // }
-            axios
-              .post('https://automessager.biz/api/virtual/create/', ids)
-              .then((response) => {
-                // store.state.dialogs.push({id: this.dialogId, token: response.data.dialogToken});
-                //console.log('data', response.data.link);
-
-                // this.openWebSocket(response.data.reconnect);
-
-                // var array = response.data.info['formChannels'];
-
-                this.dialogsList.push({
-                  father_dialog_id: dialogId,
-                  avatar: response.data.info['imageProfile'],
-                  dialogOwnerId: OwnerId,
-                  id: response.data.dialogId,
-                  last_message: 'message',
-                  last_message_date: '',
-                  role: role,
-                  name: response.data.info['name'],
-                  phone: response.data.info['uid'],
-                  token: response.data.dialogToken,
-                });
-
-                firebase_main
-                  .database()
-                  .ref(token)
-                  .set({
-                    dialogs: [
-                      {
-                        father_dialog_id: dialogId,
-                        avatar: response.data.info['imageProfile'],
-                        dialogOwnerId: OwnerId,
-                        id: response.data.dialogId,
-                        last_message: 'Нет сообщений',
-                        last_message_date: '',
-                        role: role,
-                        name: response.data.info['name'],
-                        phone: response.data.info['uid'],
-                        token: response.data.dialogToken,
-                      },
-                    ],
-                  })
-                  .then((res) => {
-                    console.log(res);
-
-                    // var arrayD = [];
-                    // var arrayN = [];
-
-                    firebase_main
-                      .database()
-                      .ref(token)
-                      .child('newDialog')
-                      .child(Dkey)
-                      .remove();
-                  })
-                  .catch((err) => console.log(err));
-
-                // client.js
-                //const WebSocket = require('ws')
-                //const url = response.data.link
-              })
-              .catch(function(error) {
-                // console.log(error);
-              });
-          }
-        });
     },
     openWebSocket(url, msg, type) {
       this.ws = new ReconnectingWebSocket(url);
@@ -801,159 +518,119 @@ export default {
       };
 
       this.ws.onmessage = (e) => {
-        var message = JSON.parse(e.data);
+        const message = JSON.parse(e.data);
+
         if (message.partionCount == null) {
           this.server_message_count++;
-          if (
-            this.messageList.length ===
-            parseInt(this.server_message_count - this.local_partion_count)
-          ) {
-            for (let i in message) {
-              var dataStore = message[i];
+          for (let i in message) {
+            var dataStore = message[i];
 
-              if (this.dialogId == null) {
-                if (dataStore.type == 'input') {
-                  this.messageList.push({
-                    id: this.server_message_count,
-                    messages: {
-                      id: dataStore.id,
-                      by: 'sended',
-                      data: dataStore,
-                    },
-                  });
-                } else {
-                  this.messageList.push({
-                    id: this.server_message_count,
-                    messages: {
-                      id: dataStore.id,
-                      by: 'input',
-                      data: dataStore,
-                    },
-                  });
-                }
+            if (this.dialogId == null) {
+              if (dataStore.type == 'input') {
+                this.messageList.push({
+                  id: this.server_message_count,
+                  messages: {
+                    id: dataStore.id,
+                    by: 'sended',
+                    data: dataStore,
+                  },
+                });
               } else {
                 this.messageList.push({
                   id: this.server_message_count,
                   messages: {
                     id: dataStore.id,
-                    by: dataStore.type,
+                    by: 'input',
                     data: dataStore,
                   },
                 });
               }
-
-              if (dataStore.files != '') {
-                this.getItemFile(dataStore);
-              }
-            }
-            if (
-              this.messageList[this.messageList.length - 1].id ===
-              this.server_partion_count
-            ) {
-              this.loadMore();
-            }
-          } else {
-            if (message.newId == null) {
-              if (message.changestate) {
-                // this.messageList[this.messageList.indexOf(data.id)].data.state = data.state;
-
-                this.messageList.map((obj) =>
-                  obj.id === message.id ? { ...obj, state: message.state } : obj
-                );
-
-                // this.messageList.splice(this.messageList.indexOf(data.id),1,{
-                //     id: data.id,
-                //     by: 'sended',
-                //     data: {text: "key.data", type: 'input', date: new Date(), state:data.state}
-                // });
-              } else {
-                if (message.type == 'sended') {
-                  this.messageListTemplate = [
-                    ...this.messageListTemplate,
-                    {
-                      id: message.id,
-                      by: 'input',
-                      data: message,
-                    },
-                  ];
-                }
-
-                if (message.files != '') {
-                  this.getItemFile(message);
-                }
-              }
-              // this.dataSend.text = null;
-              // this.dataSend.file = null;
             } else {
-              //let idReadedMessage = this.messageList.filter(x=>x.id===data.newId);
+              this.messageList.push({
+                id: this.server_message_count,
+                messages: {
+                  id: dataStore.id,
+                  by: dataStore.type,
+                  data: dataStore,
+                },
+              });
+            }
 
-              // console.log(data);
+            if (dataStore.files != '') {
+              this.getItemFile(dataStore);
+            }
+          }
+          if (
+            this.messageList[this.messageList.length - 1].id ===
+            this.server_partion_count
+          ) {
+            this.loadMore();
+          }
 
-              // this.updateLastMessage(this.dataSend.text);
-
-              if (this.dataSend.text != null) {
+          if (message.newId == null) {
+            if (message.changestate) {
+              this.messageList.map((obj) =>
+                obj.id === message.id ? { ...obj, state: message.state } : obj
+              );
+            } else {
+              if (message.type == 'sended') {
                 this.messageListTemplate = [
                   ...this.messageListTemplate,
                   {
-                    id: message.newId,
-                    by: 'sended',
-                    data: {
-                      text: this.dataSend.text,
-                      file: '',
-                      type: 'sended',
-                      date: new Date(),
-                      state: 1,
-                    },
+                    id: message.id,
+                    by: 'input',
+                    data: message,
                   },
                 ];
-                this.dataSend.text = null;
-              } else {
-                if (this.dataSend.fileType == 'image') {
-                  this.messageListTemplate = [
-                    ...this.messageListTemplate,
-                    {
-                      id: message.newId,
-                      by: 'sended',
-                      data: {
-                        text: '',
-                        file: '',
-                        sendedFile: this.dataSend.file64,
-                        fileType: this.dataSend.fileType,
-                        type: 'sended',
-                        date: new Date(),
-                        state: 1,
-                      },
-                    },
-                  ];
+              }
 
-                  this.dataSend.file = null;
-                  this.dataSend.fileType = null;
-                } else {
-                  this.messageListTemplate = [
-                    ...this.messageListTemplate,
-                    {
-                      id: message.newId,
-                      by: 'sended',
-                      data: {
-                        text: '',
-                        file: '',
-                        sendedFile: this.dataSend.file64,
-                        fileType: this.dataSend.fileType,
-                        type: 'sended',
-                        date: new Date(),
-                        state: 1,
-                      },
-                    },
-                  ];
-
-                  this.dataSend.file = null;
-                  this.dataSend.fileType = null;
-                }
+              if (message.files != '') {
+                this.getItemFile(message);
               }
             }
-
-            //this.OnScroll();
+          } else {
+            if (this.dataSend.text) {
+              this.messageListTemplate = [
+                ...this.messageListTemplate,
+                {
+                  id: message.newId,
+                  by: 'sended',
+                  data: {
+                    text: this.dataSend.text,
+                    file: '',
+                    type: 'sended',
+                    date: new Date(),
+                    state: 1,
+                  },
+                },
+              ];
+              this.dataSend.text = null;
+            } else {
+              this.messageListTemplate = [
+                ...this.messageListTemplate,
+                {
+                  id: message.newId,
+                  by: 'sended',
+                  data: {
+                    text: '',
+                    file: '',
+                    sendedFile: this.dataSend.file64,
+                    fileType: this.dataSend.fileType,
+                    type: 'sended',
+                    date: new Date(),
+                    state: 1,
+                  },
+                },
+              ];
+              this.dataSend.file = null;
+              this.dataSend.fileType = null;
+            }
           }
+          const messageListRef = this.$refs.messageList;
+
+          this.$nextTick(() => {
+            messageListRef.scrollTop = messageListRef.scrollHeight + 100;
+          });
         } else {
           this.server_partion_count = message.partionCount;
           this.local_partion_count = message.partionCount;
@@ -989,45 +666,6 @@ export default {
         this.dialogReturn();
       }
     },
-    /*
-    updateLastMessage: function(message) {
-      firebase_main
-        .database()
-        .ref(this.token)
-        .child('dialogs')
-        .once('value', function(snapshot) {})
-        .then((snap) => {
-          var selectedDialog = null;
-
-          for (let key in snap.val()) {
-            if (snap.val()[key].id == this.selectedDialog.id) {
-              selectedDialog = key;
-            }
-          }
-
-          firebase_main
-            .database()
-            .ref(this.token)
-            .child('dialogs')
-            .child(selectedDialog)
-            .update({ last_message_text: message });
-        });
-    },
-    */
-    getDialogItemColor: function(itemId) {
-      var valueColor = '';
-      if (itemId == this.selectedDialog.id) {
-        valueColor = 'accent';
-      }
-      return valueColor;
-    },
-    getDialogItemTitleColor: function(itemId) {
-      var valueColor = '';
-      if (itemId == this.selectedDialog.id) {
-        valueColor = 'white';
-      } else valueColor = 'black';
-      return valueColor;
-    },
     getNewDialogCreate: function(dialog) {
       this.createDialog(
         this.token,
@@ -1042,84 +680,38 @@ export default {
      * needs to refactor
      */
     getDialogMessages() {
-      // console.log(dialog);
-
-      // firebase_main.database().ref(this.token).child('newMessage').child(dialog.id).child('messages').remove();
-      //
-      // this.selectedDialog= dialog;
-
-      // console.log(dialog)
-
-      //create
-      // var ids = {
-      //   token: this.token,
-      //   dialogId: this.dialogId,
-      //   urlOnErrorEvent: this.urlOnErrorEvent
-      // };
-
       // //load
       const ids = {
         dialogToken: this.dialogToken,
         dialogId: this.dialogId,
         token: this.token,
       };
-
-      //
-      // const headers = {
-      //   'Access-Control-Allow-Origin': '*'
-      // }
       axios
         .post('https://automessager.biz/api/virtual/load/', ids)
         .then((response) => {
-          // console.log(response);
-          // store.state.dialogs.push({id: this.dialogId, token: response.data.dialogToken});
-          //console.log('data', response.data.link);
-
           let reconnect = response.data.reconnect;
-
-          // console.log('RESPONSE:',response);
 
           this.dialogName = response.data.info['name']
             ? response.data.info['name']
             : 'Без имени';
           this.openWebSocket(reconnect, null, 'open');
-
-          // client.js
-          //const WebSocket = require('ws')
-          //const url = response.data.link
-        })
-        .catch(function(error) {
-          // console.log(error);
         });
-
-      // console.log("OPEN_WEBSOCKET")
     },
     getChannelMessages() {
       if (localStorage.getItem('chdtoken')) {
-        this.ch_dialogToken = JSON.parse(localStorage.getItem('chdtoken'));
+        const channelDialogToken = JSON.parse(localStorage.getItem('chdtoken'));
 
         const tokenids = {
           token: this.token,
-          dialogToken: this.ch_dialogToken,
+          dialogToken: channelDialogToken,
           channelId: this.channelId,
         };
         axios
           .post('https://automessager.biz/api/virtual/load/', tokenids)
           .then((response) => {
-            // console.log(response);
-            //console.log('data', response.data.link);
             this.openWebSocket(response.data.reconnect, null, 'open');
-            // client.js
-
-            //const WebSocket = require('ws')
-            //const url = response.data.link
-          })
-          .catch(function(error) {
-            // console.log(error);
           });
       } else {
-        console.log('create token');
-
         const ids = {
           token: this.token,
           channelId: this.channelId,
@@ -1137,14 +729,7 @@ export default {
               'chdtoken',
               JSON.stringify(response.data.dialogToken)
             );
-            //console.log('data', response.data.link);
             this.openWebSocket(response.data.reconnect, null, 'open');
-            // client.js
-            //const WebSocket = require('ws')
-            //const url = response.data.link
-          })
-          .catch(function(error) {
-            console.log(error);
           });
       }
     },
@@ -1196,7 +781,6 @@ export default {
 
         this.dataSend.file64 = fileReader.result;
         this.dataSend.file = fileReader.result.split(',')[1];
-        // console.log(this.dataSend.file)
       });
       fileReader.readAsDataURL(files[0]);
       this.fileAttached = true;
@@ -1217,7 +801,7 @@ export default {
     },
   },
   /**
-   * @todo
+   * @todo find an optimal solution
    */
   updated() {
     //this.getListCommands();
