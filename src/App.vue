@@ -19,14 +19,7 @@
               <done-icon></done-icon>
             </button>
           </div>
-          <div
-            id="listgroup-ex"
-            ref="messageList"
-            style="text-align: center;position:relative; overflow-y:auto;"
-          >
-            <b-button v-if="messageListTemplate != ''" @click="loadMore()">
-              Загрузить еще
-            </b-button>
+          <div ref="messageList" style="position:relative; overflow-y:auto;">
             <div class="chat">
               <div class="chat-container">
                 <div class="conversation">
@@ -40,9 +33,7 @@
                       }"
                       class="message"
                     >
-                      <div v-if="item.data.text">
-                        {{ item.data.text }}
-                      </div>
+                      <div v-if="item.data.text" v-html="item.data.text" />
                       <div v-else-if="item.data.files">
                         <div v-if="getFooFileType(item.data) != 'image'">
                           <div
@@ -113,7 +104,7 @@
 
           <textarea
             v-model="dataSend.text"
-            type="text"
+            @keyup.ctrl.enter="onSend()"
             placeholder="Сообщение"
             required
           ></textarea>
@@ -239,15 +230,18 @@ export default {
      */
     loadMore() {
       var array = [];
+
+      /*
       const res = this.messageList.filter(
         (v) => v.id == this.local_partion_count
       );
+      */
 
-      for (let key in res) {
-        array.push(res[key].messages);
+      for (let message of this.messageList) {
+        array.push(message.messages);
       }
       this.messageListTemplate = [...array, ...this.messageListTemplate];
-      this.local_partion_count--;
+      //this.local_partion_count--;
     },
     getItemFile(file) {
       let fileId = file.files;
@@ -280,7 +274,7 @@ export default {
       var text = this.dataSend.text;
       var file = this.dataSend.file;
 
-      if (text != null && file != null) {
+      if (text && file) {
         if (this.ws.readyState == WebSocket.CLOSED) {
           this.openWebSocket(
             this.ws.url,
@@ -288,29 +282,38 @@ export default {
           );
           this.openWebSocket(
             this.ws.url,
-            '{"command":"message", "text":"' + text + '"}'
+            '{"command":"message", "text":"' +
+              text.replace(/\n/g, '<br />') +
+              '"}'
           );
           this.nulling(2);
         } else if (this.ws.readyState == WebSocket.OPEN) {
           this.ws.send('{"command":"file", "file":"' + file + '"}');
           this.ws.send(
-            '{"command":"message", "text":"' + this.dataSend.text + '"}'
+            '{"command":"message", "text":"' +
+              text.replace(/\n/g, '<br />') +
+              '"}'
           );
           this.nulling(2);
         }
-      } else if (text != null) {
-        console.log('text');
+      } else if (text) {
         if (this.ws.readyState == WebSocket.CLOSED) {
           this.openWebSocket(
             this.ws.url,
-            '{"command":"message", "text":"' + text + '"}'
+            '{"command":"message", "text":"' +
+              text.replace(/\n/g, '<br />') +
+              '"}'
           );
           this.nulling(1, 'text');
         } else if (this.ws.readyState == WebSocket.OPEN) {
-          this.ws.send('{"command":"message", "text":"' + text + '"}');
+          this.ws.send(
+            '{"command":"message", "text":"' +
+              text.replace(/\n/g, '<br />') +
+              '"}'
+          );
           this.nulling(1, 'text');
         }
-      } else if (file != null) {
+      } else if (file) {
         if (this.ws.readyState == WebSocket.CLOSED) {
           this.openWebSocket(
             this.ws.url,
@@ -328,16 +331,16 @@ export default {
      */
     nulling: function(type, input) {
       if (this.dialogId == null) {
-        var message_random_id = Math.random() * (1000 - 1) + 1;
+        const message_random_id = this.get_uuid();
         if (type === 1) {
-          if (this.dataSend.text != null) {
+          if (this.dataSend.text) {
             this.messageListTemplate = [
               ...this.messageListTemplate,
               {
                 id: message_random_id,
                 by: 'sended',
                 data: {
-                  text: this.dataSend.text,
+                  text: this.dataSend.text.replace(/\n/g, '<br />'),
                   file: '',
                   type: 'sended',
                   date: new Date(),
@@ -438,7 +441,7 @@ export default {
               id: message_random_id,
               by: 'sended',
               data: {
-                text: this.dataSend.text,
+                text: this.dataSend.text.replace(/\n/g, '<br />'),
                 file: '',
                 type: 'sended',
                 date: new Date(),
@@ -515,159 +518,117 @@ export default {
       };
 
       this.ws.onmessage = (e) => {
-        var message = JSON.parse(e.data);
+        const message = JSON.parse(e.data);
+
         if (message.partionCount == null) {
           this.server_message_count++;
-          if (
-            this.messageList.length ===
-            parseInt(this.server_message_count - this.local_partion_count)
-          ) {
-            for (let i in message) {
-              var dataStore = message[i];
+          for (let i in message) {
+            var dataStore = message[i];
 
-              if (this.dialogId == null) {
-                if (dataStore.type == 'input') {
-                  this.messageList.push({
-                    id: this.server_message_count,
-                    messages: {
-                      id: dataStore.id,
-                      by: 'sended',
-                      data: dataStore,
-                    },
-                  });
-                } else {
-                  this.messageList.push({
-                    id: this.server_message_count,
-                    messages: {
-                      id: dataStore.id,
-                      by: 'input',
-                      data: dataStore,
-                    },
-                  });
-                }
+            if (this.dialogId == null) {
+              if (dataStore.type == 'input') {
+                this.messageList.push({
+                  id: this.server_message_count,
+                  messages: {
+                    id: dataStore.id,
+                    by: 'sended',
+                    data: dataStore,
+                  },
+                });
               } else {
                 this.messageList.push({
                   id: this.server_message_count,
                   messages: {
                     id: dataStore.id,
-                    by: dataStore.type,
+                    by: 'input',
                     data: dataStore,
                   },
                 });
               }
-
-              if (dataStore.files != '') {
-                this.getItemFile(dataStore);
-              }
-            }
-            if (
-              this.messageList[this.messageList.length - 1].id ===
-              this.server_partion_count
-            ) {
-              this.loadMore();
-            }
-          } else {
-            if (message.newId == null) {
-              if (message.changestate) {
-                // this.messageList[this.messageList.indexOf(data.id)].data.state = data.state;
-
-                this.messageList.map((obj) =>
-                  obj.id === message.id ? { ...obj, state: message.state } : obj
-                );
-
-                // this.messageList.splice(this.messageList.indexOf(data.id),1,{
-                //     id: data.id,
-                //     by: 'sended',
-                //     data: {text: "key.data", type: 'input', date: new Date(), state:data.state}
-                // });
-              } else {
-                if (message.type == 'sended') {
-                  this.messageListTemplate = [
-                    ...this.messageListTemplate,
-                    {
-                      id: message.id,
-                      by: 'input',
-                      data: message,
-                    },
-                  ];
-                }
-
-                if (message.files != '') {
-                  this.getItemFile(message);
-                }
-              }
-              // this.dataSend.text = null;
-              // this.dataSend.file = null;
             } else {
-              //let idReadedMessage = this.messageList.filter(x=>x.id===data.newId);
+              this.messageList.push({
+                id: this.server_message_count,
+                messages: {
+                  id: dataStore.id,
+                  by: dataStore.type,
+                  data: dataStore,
+                },
+              });
+            }
 
-              // console.log(data);
+            if (dataStore.files != '') {
+              this.getItemFile(dataStore);
+            }
+          }
+          if (
+            this.messageList[this.messageList.length - 1].id ===
+            this.server_partion_count
+          ) {
+            this.loadMore();
+          }
 
-              // this.updateLastMessage(this.dataSend.text);
-
-              if (this.dataSend.text != null) {
+          if (message.newId == null) {
+            if (message.changestate) {
+              this.messageList.map((obj) =>
+                obj.id === message.id ? { ...obj, state: message.state } : obj
+              );
+            } else {
+              if (message.type == 'sended') {
                 this.messageListTemplate = [
                   ...this.messageListTemplate,
                   {
-                    id: message.newId,
-                    by: 'sended',
-                    data: {
-                      text: this.dataSend.text,
-                      file: '',
-                      type: 'sended',
-                      date: new Date(),
-                      state: 1,
-                    },
+                    id: message.id,
+                    by: 'input',
+                    data: message,
                   },
                 ];
-                this.dataSend.text = null;
-              } else {
-                if (this.dataSend.fileType == 'image') {
-                  this.messageListTemplate = [
-                    ...this.messageListTemplate,
-                    {
-                      id: message.newId,
-                      by: 'sended',
-                      data: {
-                        text: '',
-                        file: '',
-                        sendedFile: this.dataSend.file64,
-                        fileType: this.dataSend.fileType,
-                        type: 'sended',
-                        date: new Date(),
-                        state: 1,
-                      },
-                    },
-                  ];
+              }
 
-                  this.dataSend.file = null;
-                  this.dataSend.fileType = null;
-                } else {
-                  this.messageListTemplate = [
-                    ...this.messageListTemplate,
-                    {
-                      id: message.newId,
-                      by: 'sended',
-                      data: {
-                        text: '',
-                        file: '',
-                        sendedFile: this.dataSend.file64,
-                        fileType: this.dataSend.fileType,
-                        type: 'sended',
-                        date: new Date(),
-                        state: 1,
-                      },
-                    },
-                  ];
-
-                  this.dataSend.file = null;
-                  this.dataSend.fileType = null;
-                }
+              if (message.files != '') {
+                this.getItemFile(message);
               }
             }
-
-            //this.OnScroll();
+          } else {
+            if (this.dataSend.text) {
+              this.messageListTemplate = [
+                ...this.messageListTemplate,
+                {
+                  id: message.newId,
+                  by: 'sended',
+                  data: {
+                    text: this.dataSend.text,
+                    file: '',
+                    type: 'sended',
+                    date: new Date(),
+                    state: 1,
+                  },
+                },
+              ];
+              this.dataSend.text = null;
+            } else {
+              this.messageListTemplate = [
+                ...this.messageListTemplate,
+                {
+                  id: message.newId,
+                  by: 'sended',
+                  data: {
+                    text: '',
+                    file: '',
+                    sendedFile: this.dataSend.file64,
+                    fileType: this.dataSend.fileType,
+                    type: 'sended',
+                    date: new Date(),
+                    state: 1,
+                  },
+                },
+              ];
+              this.dataSend.file = null;
+              this.dataSend.fileType = null;
+            }
           }
+          const messageListRef = this.$refs.messageList;
+          messageListRef.scrollTop =
+            messageListRef.scrollHeight + messageListRef.clientHeight;
         } else {
           this.server_partion_count = message.partionCount;
           this.local_partion_count = message.partionCount;
@@ -717,57 +678,22 @@ export default {
      * needs to refactor
      */
     getDialogMessages() {
-      // console.log(dialog);
-
-      // firebase_main.database().ref(this.token).child('newMessage').child(dialog.id).child('messages').remove();
-      //
-      // this.selectedDialog= dialog;
-
-      // console.log(dialog)
-
-      //create
-      // var ids = {
-      //   token: this.token,
-      //   dialogId: this.dialogId,
-      //   urlOnErrorEvent: this.urlOnErrorEvent
-      // };
-
       // //load
       const ids = {
         dialogToken: this.dialogToken,
         dialogId: this.dialogId,
         token: this.token,
       };
-
-      //
-      // const headers = {
-      //   'Access-Control-Allow-Origin': '*'
-      // }
       axios
         .post('https://automessager.biz/api/virtual/load/', ids)
         .then((response) => {
-          // console.log(response);
-          // store.state.dialogs.push({id: this.dialogId, token: response.data.dialogToken});
-          //console.log('data', response.data.link);
-
           let reconnect = response.data.reconnect;
-
-          // console.log('RESPONSE:',response);
 
           this.dialogName = response.data.info['name']
             ? response.data.info['name']
             : 'Без имени';
           this.openWebSocket(reconnect, null, 'open');
-
-          // client.js
-          //const WebSocket = require('ws')
-          //const url = response.data.link
-        })
-        .catch(function(error) {
-          // console.log(error);
         });
-
-      // console.log("OPEN_WEBSOCKET")
     },
     getChannelMessages() {
       if (localStorage.getItem('chdtoken')) {
@@ -781,20 +707,9 @@ export default {
         axios
           .post('https://automessager.biz/api/virtual/load/', tokenids)
           .then((response) => {
-            // console.log(response);
-            //console.log('data', response.data.link);
             this.openWebSocket(response.data.reconnect, null, 'open');
-            // client.js
-
-            //const WebSocket = require('ws')
-            //const url = response.data.link
-          })
-          .catch(function(error) {
-            // console.log(error);
           });
       } else {
-        console.log('create token');
-
         const ids = {
           token: this.token,
           channelId: this.channelId,
@@ -812,14 +727,7 @@ export default {
               'chdtoken',
               JSON.stringify(response.data.dialogToken)
             );
-            //console.log('data', response.data.link);
             this.openWebSocket(response.data.reconnect, null, 'open');
-            // client.js
-            //const WebSocket = require('ws')
-            //const url = response.data.link
-          })
-          .catch(function(error) {
-            console.log(error);
           });
       }
     },
