@@ -627,8 +627,10 @@ export default {
             }
           }
           const messageListRef = this.$refs.messageList;
-          messageListRef.scrollTop =
-            messageListRef.scrollHeight + messageListRef.clientHeight;
+
+          this.$nextTick(() => {
+            messageListRef.scrollTop = messageListRef.scrollHeight + 100;
+          });
         } else {
           this.server_partion_count = message.partionCount;
           this.local_partion_count = message.partionCount;
