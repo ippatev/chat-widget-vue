@@ -811,7 +811,7 @@ export default {
                   by: 'sended',
 
                   data: {
-                    text: this.dataSend.text,
+                    text: this.dataSend.text.replace(/\n/g, '<br />'),
 
                     file: '',
 
@@ -1102,8 +1102,6 @@ export default {
   padding: 0px;
 
   resize: none;
-
-  font-family: Avenir Next, Helvetica Neue, Helvetica, sans-serif;
 
   background: #fafbfc;
 
@@ -1512,8 +1510,6 @@ export default {
   justify-content: space-between;
 
   border-radius: 10px;
-
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   animation: fadeIn;
 
