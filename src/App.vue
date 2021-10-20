@@ -25,7 +25,10 @@
                 <li
                   v-for="item in commands"
                   :key="item.id"
-                  @click="onCommandsResult(item.id, dialogId)"
+                  @click="
+                    (showCommands = false),
+                      onCommandCallbackHandler(item.id, dialogId)
+                  "
                 >
                   <b>{{ item.text }}</b>
                 </li>
@@ -33,7 +36,7 @@
             </div>
           </div>
 
-          <div ref="messageList" style="position:relative; overflow-y:auto;">
+          <div ref="messageList" style="position: relative; overflow-y: auto">
             <div class="chat">
               <div class="chat-container">
                 <div class="conversation">
@@ -53,7 +56,11 @@
                       <div v-else-if="item.data.files">
                         <div v-if="getFooFileType(item.data) != 'image'">
                           <div
-                            style="display: flex; width: 100%; justify-content: space-between;"
+                            style="
+                              display: flex;
+                              width: 100%;
+                              justify-content: space-between;
+                            "
                           >
                             <a :href="getFooFile(item.data)">Файл</a>
                           </div>
@@ -92,22 +99,31 @@
           </div>
         </div>
       </div>
+      <div v-else class="alert__success">
+        <span> Диалог завершен </span>
+        <done-icon></done-icon>
+      </div>
       <div
         v-if="showActions"
-        style="text-align: center; padding-top: 16px; padding-bottom: 16px;"
+        style="text-align: center; padding-top: 16px; padding-bottom: 16px"
       >
         <div v-for="(key, idx) in buttonsList" :key="idx">
           <button
             @click="onSendCommand(key.action)"
             class="button"
-            style="width: 160px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"
+            style="
+              width: 160px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            "
           >
             <small>{{ key.text }}</small>
           </button>
         </div>
       </div>
 
-      <div class="input__group">
+      <div v-if="!dialogueEnded" class="input__group">
         <input
           ref="fileInput"
           type="file"
@@ -118,6 +134,7 @@
 
         <button
           :style="{ color: !dataSend.file ? '#4149F2' : 'inherit' }"
+          style="background: white; cursor: pointer"
           @click="onPickFile('fileInput')"
         >
           <paper-clip-icon />
@@ -130,11 +147,14 @@
           required
         ></textarea>
 
-        <button style="color: #4149F2" @click="onSend()">
+        <button
+          style="background: white;color: #4149f2; cursor: pointer"
+          @click="onSend()"
+        >
           <b>Отправить</b>
         </button>
 
-        <span @click="showCommands = !showCommands">
+        <span @click="showCommands = !showCommands" style="padding: 0 8px">
           <menu-icon> </menu-icon>
         </span>
       </div>
@@ -149,14 +169,6 @@
 
         <open-in-new-icon />
       </button>
-    </div>
-
-    <div v-if="dialogueEnded" class="alert__success">
-      <span>
-        Беседа завершена
-      </span>
-
-      <done-icon></done-icon>
     </div>
 
     <button
@@ -200,65 +212,41 @@ export default {
   data() {
     return {
       root: null,
-
       dialogueEnded: false,
-
       showFabWindow: false,
-
       fileAttached: false,
-
       file: null,
-
       ws: null,
-
       dialogName: null,
-
       messageList: [],
-
       commands: [],
       showCommands: false,
-
       fileFoo: [],
-
       buttonsList: [],
-
       array_ws: [],
-
       messageListTemplate: [],
-
       dataSend: {
         text: null,
-
         fileType: null,
-
         file: null,
-
         file64: null,
       },
-
       showActions: this.$root.$el.parentElement.dataset.show_actions | false,
-
       dialogToken: this.$root.$el.parentElement.dataset.dtoken, // "401cf075-225e-419a-9a4a-80db8bc1d32b",
-
       dialogId: this.$root.$el.parentElement.dataset.dialog, //"5d38153f0e9ed01d7c830ca7"
-
       token: this.$root.$el.parentElement.dataset.token,
-
       channelId: this.$root.$el.parentElement.dataset.channel,
-
       typeElement: this.$root.$el.parentElement.dataset.type,
-
       urlOnError: this.$root.$el.parentElement.dataset.urlonerror,
-
       urlOnErrorEvent: 'https://ic.myams.biz/',
-
       server_message_count: 0,
-
       server_partion_count: 0,
-
       local_partion_count: 0,
-
       server_message_array: [],
+      /**
+       * @todo callback function for commands
+       */
+      onCommandCallbackHandler: null,
     };
   },
 
@@ -268,9 +256,16 @@ export default {
     } else if (this.channelId) {
       this.getChannelMessages();
     }
-
-    this.setCommands();
-
+    this.setCommands(
+      [
+        { id: 1, text: 'Шаблон 1' },
+        { id: 2, text: 'Шаблон 2' },
+      ],
+      function(id, widgetDialog) {
+        console.log(id);
+        //widgetDialog.sendMessage('Тест ' + id);
+      }
+    );
     global.root = this;
   },
 
@@ -681,11 +676,17 @@ export default {
       return time;
     },
 
-    setCommands: function(json) {
-      if (json) {
+    setCommands: function(commands, callback) {
+      this.onCommandCallbackHandler = callback;
+
+      if (typeof commands === 'string') {
         this.commands = JSON.parse(json);
+      } else if (Array.isArray(commands)) {
+        this.commands = commands;
+      } else {
+        this.commands = [];
       }
-      this.commands.push({ text: 'Предложить звонок', id: 'calling' });
+      this.commands.push({ text: 'Предложить звонок', id: 0 });
     },
 
     onCommandsResult: function(idMenu, idDialog) {
@@ -1462,6 +1463,8 @@ export default {
 
 .nav__toolbar {
   display: flex;
+  background: white;
+  padding-left: 8px;
 }
 
 .nav__toolbar > button {
@@ -1485,8 +1488,6 @@ export default {
 .sc-chat-window {
   width: 370px;
 
-  height: calc(400px-20vh);
-
   position: fixed;
 
   right: 25px;
@@ -1497,7 +1498,7 @@ export default {
 
   /*box-shadow: 0px 7px 40px 2px rgba(148, 149, 150, 0.1); */
 
-  margin-bottom: 80px;
+  margin-bottom: 50px;
 
   padding: 0;
 
@@ -1568,7 +1569,7 @@ export default {
 
 .button {
   display: flex;
-
+  background: white;
   justify-content: center;
 
   align-items: center;
@@ -1636,15 +1637,13 @@ button {
 }
 
 .alert__success {
-  width: auto;
-
+  display: flex;
+  width: 100%;
   height: auto;
-
   margin: 20px 16px;
-
-  text-align: start;
-
-  justify-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .alert__success > span {
