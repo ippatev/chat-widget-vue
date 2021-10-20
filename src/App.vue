@@ -19,13 +19,8 @@
               <done-icon></done-icon>
             </button>
           </div>
-          <div
-            v-if="showCommands"
-            v-click-outside="(showCommands = false)"
-            class="modal"
-            style="z-index: 999"
-          >
-            <div class="modal-content">
+          <div v-if="showCommands" class="modal" style="z-index: 999">
+            <div class="modal-content" v-click-outside="outSideClickHandler">
               <ul @click.stop>
                 <li
                   v-for="item in commands"
@@ -191,10 +186,6 @@ import OpenInNewIcon from './components/Icons/OpenInNewIcon.vue';
 import MenuIcon from './components/Icons/MenuIcon.vue';
 
 export default {
-  directives: {
-    vClickOutside,
-  },
-
   components: {
     CancelIcon,
 
@@ -284,6 +275,9 @@ export default {
   },
 
   methods: {
+    outSideClickHandler() {
+      this.showCommands = false;
+    },
     async sendVideoCall() {
       const uuid = await this.get_uuid();
 
@@ -337,9 +331,8 @@ export default {
       let fileId = file.files;
 
       if (fileId) {
-        axios = []
-          //    .get('https://automessager.biz/api/dialog/file/' + fileId)
-
+        axios
+          .get('https://automessager.biz/api/dialog/file/' + fileId)
           .then((response) => {
             this.fileFoo.push({
               id: file.id,
@@ -688,8 +681,10 @@ export default {
       return time;
     },
 
-    setCommands: function(json = []) {
-      this.commands = JSON.parse(json);
+    setCommands: function(json) {
+      if (json) {
+        this.commands = JSON.parse(json);
+      }
       this.commands.push({ text: 'Предложить звонок', id: 'calling' });
     },
 
@@ -1613,11 +1608,8 @@ export default {
 
 .input__group {
   display: flex;
-
   align-content: stretch;
-
   background: white;
-
   border: 1px solid #ccc;
 }
 
@@ -1635,6 +1627,10 @@ button {
 
 .input__group > button {
   border: none;
+}
+
+.input__group > span {
+  margin: auto;
 }
 
 .message__image {
