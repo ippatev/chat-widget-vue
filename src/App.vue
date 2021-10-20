@@ -256,16 +256,6 @@ export default {
     } else if (this.channelId) {
       this.getChannelMessages();
     }
-    this.setCommands(
-      [
-        { id: 1, text: 'Шаблон 1' },
-        { id: 2, text: 'Шаблон 2' },
-      ],
-      function(id, widgetDialog) {
-        console.log(id);
-        //widgetDialog.sendMessage('Тест ' + id);
-      }
-    );
     global.root = this;
   },
 
@@ -375,7 +365,7 @@ export default {
             this.ws.url,
 
             '{"command":"message", "text":"' +
-              text.replace(/\n/g, '<br />') +
+              text.replace(/\n/g, '<br/>') +
               '"}'
           );
 
@@ -385,7 +375,7 @@ export default {
 
           this.ws.send(
             '{"command":"message", "text":"' +
-              text.replace(/\n/g, '<br />') +
+              text.replace(/\n/g, '<br/>') +
               '"}'
           );
 
@@ -397,7 +387,7 @@ export default {
             this.ws.url,
 
             '{"command":"message", "text":"' +
-              text.replace(/\n/g, '<br />') +
+              text.replace(/\n/g, '<br/>') +
               '"}'
           );
 
@@ -405,7 +395,7 @@ export default {
         } else if (this.ws.readyState == WebSocket.OPEN) {
           this.ws.send(
             '{"command":"message", "text":"' +
-              text.replace(/\n/g, '<br />') +
+              text.replace(/\n/g, '<br/>') +
               '"}'
           );
 
@@ -449,7 +439,7 @@ export default {
                 by: 'sended',
 
                 data: {
-                  text: this.dataSend.text.replace(/\n/g, '<br />'),
+                  text: this.dataSend.text.replace(/\n/g, '<br/>'),
 
                   file: '',
 
@@ -598,7 +588,7 @@ export default {
               by: 'sended',
 
               data: {
-                text: this.dataSend.text.replace(/\n/g, '<br />'),
+                text: this.dataSend.text.replace(/\n/g, '<br/>'),
 
                 file: '',
 
@@ -812,7 +802,7 @@ export default {
                   by: 'sended',
 
                   data: {
-                    text: this.dataSend.text.replace(/\n/g, '<br />'),
+                    text: this.dataSend.text.replace(/\n/g, '<br/>'),
 
                     file: '',
 
