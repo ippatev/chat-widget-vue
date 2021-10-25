@@ -19,22 +19,11 @@
               <done-icon></done-icon>
             </button>
           </div>
-          <div v-if="showCommands" class="modal" style="z-index: 999">
-            <div class="modal-content" v-click-outside="outSideClickHandler">
-              <ul @click.stop>
-                <li
-                  v-for="item in commands"
-                  :key="item.id"
-                  @click="
-                    (showCommands = false),
-                      onCommandCallbackHandler(item.id, dialogId)
-                  "
-                >
-                  <b>{{ item.text }}</b>
-                </li>
-              </ul>
-            </div>
-          </div>
+          <commands-modal v-if="showCommands"
+                          :commands="commands"
+                          @clickOutside="outSideClickHandler"
+                          @clickCommand="(showCommands = false), onCommandCallbackHandler($event.id, dialogId)">
+          </commands-modal>
 
           <div ref="messageList" style="position: relative; overflow-y: auto">
             <div class="chat">
@@ -185,30 +174,23 @@
 <script>
 import axios from 'axios';
 
-import vClickOutside from 'v-click-outside';
-
 import DoneIcon from './components/Icons/DoneIcon.vue';
-
 import PaperClipIcon from './components/Icons/PaperClip.vue';
-
 import CancelIcon from './components/Icons/CancelIcon.vue';
-
 import OpenInNewIcon from './components/Icons/OpenInNewIcon.vue';
-
 import MenuIcon from './components/Icons/MenuIcon.vue';
+
+import CommandsModal from './components/CommandsModal'
 
 export default {
   components: {
+    CommandsModal,
     CancelIcon,
-
     PaperClipIcon,
-
     DoneIcon,
-
     OpenInNewIcon,
     MenuIcon,
   },
-
   data() {
     return {
       root: null,
@@ -256,17 +238,7 @@ export default {
     } else if (this.channelId) {
       this.getChannelMessages();
     }
-    this.setCommands(
-      [
-        { id: 1, text: 'Шаблон 1' },
-        { id: 2, text: 'Шаблон 2' },
-      ],
-      function(id, widgetDialog) {
-        console.log(id);
-        //widgetDialog.sendMessage('Тест ' + id);
-      }
-    );
-    global.root = this;
+    global.LoyamsChat = this;
   },
 
   methods: {
@@ -375,7 +347,7 @@ export default {
             this.ws.url,
 
             '{"command":"message", "text":"' +
-              text.replace(/\n/g, '<br />') +
+              text.replace(/\n/g, '<br/>') +
               '"}'
           );
 
@@ -385,7 +357,7 @@ export default {
 
           this.ws.send(
             '{"command":"message", "text":"' +
-              text.replace(/\n/g, '<br />') +
+              text.replace(/\n/g, '<br/>') +
               '"}'
           );
 
@@ -397,7 +369,7 @@ export default {
             this.ws.url,
 
             '{"command":"message", "text":"' +
-              text.replace(/\n/g, '<br />') +
+              text.replace(/\n/g, '<br/>') +
               '"}'
           );
 
@@ -405,7 +377,7 @@ export default {
         } else if (this.ws.readyState == WebSocket.OPEN) {
           this.ws.send(
             '{"command":"message", "text":"' +
-              text.replace(/\n/g, '<br />') +
+              text.replace(/\n/g, '<br/>') +
               '"}'
           );
 
@@ -449,7 +421,7 @@ export default {
                 by: 'sended',
 
                 data: {
-                  text: this.dataSend.text.replace(/\n/g, '<br />'),
+                  text: this.dataSend.text.replace(/\n/g, '<br/>'),
 
                   file: '',
 
@@ -598,7 +570,7 @@ export default {
               by: 'sended',
 
               data: {
-                text: this.dataSend.text.replace(/\n/g, '<br />'),
+                text: this.dataSend.text.replace(/\n/g, '<br/>'),
 
                 file: '',
 
@@ -812,7 +784,7 @@ export default {
                   by: 'sended',
 
                   data: {
-                    text: this.dataSend.text.replace(/\n/g, '<br />'),
+                    text: this.dataSend.text.replace(/\n/g, '<br/>'),
 
                     file: '',
 
@@ -975,6 +947,15 @@ export default {
         localStorage.removeItem('chdtoken');
 
         this.dialogueEnded = true;
+
+        setTimeout(() => {
+          this.$destroy();
+
+          /**
+           * @todo remove dom element from destroy$
+           */
+          this.$el.parentNode.removeChild(this.$el);
+        }, 2000)
       } else {
         var ids = {
           dialogToken: this.dialogToken,
@@ -1660,113 +1641,4 @@ button {
   border-radius: 4px;
 }
 
-.modal {
-  position: absolute; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0, 0, 0); /* Fallback color */
-  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
-  -webkit-animation-name: fadeIn; /* Fade in the background */
-  -webkit-animation-duration: 0.4s;
-  animation-name: fadeIn;
-  animation-duration: 0.4s;
-}
-
-/* Modal Content */
-.modal-content {
-  position: absolute;
-  bottom: 0;
-  background-color: #fefefe;
-  width: 100%;
-  -webkit-animation-name: slideIn;
-  -webkit-animation-duration: 0.4s;
-  animation-name: slideIn;
-  animation-duration: 0.4s;
-}
-
-.modal-content > ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.modal-content li {
-  padding: 8px 16px;
-}
-
-/* The Close Button */
-.close {
-  color: white;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.modal-header {
-  padding: 2px 16px;
-  background-color: #5cb85c;
-  color: white;
-}
-
-.modal-body {
-  padding: 2px 16px;
-}
-
-.modal-footer {
-  padding: 2px 16px;
-  background-color: #5cb85c;
-  color: white;
-}
-
-/* Add Animation */
-@-webkit-keyframes slideIn {
-  from {
-    bottom: -300px;
-    opacity: 0;
-  }
-  to {
-    bottom: 0;
-    opacity: 1;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    bottom: -300px;
-    opacity: 0;
-  }
-  to {
-    bottom: 0;
-    opacity: 1;
-  }
-}
-
-@-webkit-keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 </style>
