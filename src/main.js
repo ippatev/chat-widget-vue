@@ -10,4 +10,4 @@ import vClickOutside from 'v-click-outside';
 Vue.use(vueCustomElement);
 Vue.use(vClickOutside);
 
-Vue.customElement('el-chat', App);
+Vue.customElement('loyams-chat', App);
