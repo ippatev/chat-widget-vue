@@ -1,6 +1,6 @@
 <template>
-  <div  class="modal" style="z-index: 999">
-    <div class="modal-content" v-click-outside="clickOutside">
+  <div  class="commands-modal" style="z-index: 999">
+    <div class="commands-modal-content" v-click-outside="clickOutside">
       <ul @click.stop>
         <li
             v-for="item in commands"
@@ -37,7 +37,7 @@ export default {
 </script>
 
 <style scoped>
-.modal {
+.commands-modal {
   position: absolute; /* Stay in place */
   z-index: 1; /* Sit on top */
   left: 0;
@@ -54,7 +54,7 @@ export default {
 }
 
 /* Modal Content */
-.modal-content {
+.commands-modal-content {
   position: absolute;
   bottom: 0;
   background-color: #fefefe;
@@ -65,13 +65,13 @@ export default {
   animation-duration: 0.4s;
 }
 
-.modal-content > ul {
+.commands-modal-content > ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.modal-content li {
+.commands-modal-content li {
   padding: 8px 16px;
 }
 
@@ -90,17 +90,17 @@ export default {
   cursor: pointer;
 }
 
-.modal-header {
+.commands-modal-header {
   padding: 2px 16px;
   background-color: #5cb85c;
   color: white;
 }
 
-.modal-body {
+.commands-modal-body {
   padding: 2px 16px;
 }
 
-.modal-footer {
+.commands-modal-footer {
   padding: 2px 16px;
   background-color: #5cb85c;
   color: white;
