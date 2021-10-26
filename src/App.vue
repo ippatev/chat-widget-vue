@@ -1054,9 +1054,7 @@ export default {
 
 .fab-wrapper .actions-container {
   overflow: hidden;
-
   z-index: 0;
-
   position: relative;
 }
 
@@ -1070,57 +1068,37 @@ export default {
 
 .demo-test-area {
   width: 300px;
-
   box-sizing: border-box;
 }
 
 .demo-test-area--text {
   box-sizing: border-box;
-
   width: 100%;
-
   margin: 0px;
-
   padding: 0px;
-
   resize: none;
-
   background: #fafbfc;
-
   color: #fff;
-
   border: 1px solid #dde5ed;
-
   font-size: 16px;
-
   padding: 16px 15px 14px;
-
   margin: 0;
-
   border-radius: 6px;
-
   outline: none;
-
   height: 150px;
-
   margin-bottom: 10px;
 }
 
 .demo-monster-img {
   width: 400px;
-
   display: block;
-
   margin: 60px auto;
 }
 
 .colors a {
   color: #fff;
-
   text-decoration: none;
-
   padding: 4px 10px;
-
   border-radius: 10px;
 }
 
@@ -1134,9 +1112,7 @@ export default {
 
 .fabDiv {
   position: fixed;
-
   bottom: 32px;
-
   right: 32px;
 }
 
@@ -1144,107 +1120,74 @@ export default {
 
 .message {
   color: #000;
-
   clear: both;
-
   line-height: 18px;
-
   font-size: 15px;
-
   padding: 8px;
-
   position: relative;
-
   margin: 8px 0;
-
   max-width: 85%;
-
   word-wrap: break-word;
-
   z-index: -1;
 }
 
 .message:after {
   position: absolute;
-
   content: '';
-
   width: 0;
-
   height: 0;
-
   border-style: solid;
 }
 
 .metadata {
   display: inline-block;
-
   float: right;
-
   padding: 0 0 0 7px;
-
   position: relative;
-
   bottom: -4px;
 }
 
 .metadata .time {
   color: rgba(0, 0, 0, 0.45);
-
   font-size: 11px;
-
   display: inline-block;
 }
 
 .metadata .tick {
   display: inline-block;
-
   margin-left: 2px;
-
   position: relative;
-
   top: 4px;
-
   height: 16px;
-
   width: 16px;
 }
 
 .metadata .tick svg {
   position: absolute;
-
   transition: 0.5s ease-in-out;
 }
 
 .metadata .tick svg:first-child {
   -webkit-backface-visibility: hidden;
-
   backface-visibility: hidden;
-
   -webkit-transform: perspective(800px) rotateY(180deg);
-
   transform: perspective(800px) rotateY(180deg);
 }
 
 .metadata .tick svg:last-child {
   -webkit-backface-visibility: hidden;
-
   backface-visibility: hidden;
-
   -webkit-transform: perspective(800px) rotateY(0deg);
-
   transform: perspective(800px) rotateY(0deg);
 }
 
 .metadata .tick-animation svg:first-child {
   -webkit-transform: perspective(800px) rotateY(0);
-
   transform: perspective(800px) rotateY(0);
 }
 
 .metadata .tick-animation svg:last-child {
   -webkit-transform: perspective(800px) rotateY(-179.9deg);
-
   transform: perspective(800px) rotateY(-179.9deg);
 }
 
@@ -1254,9 +1197,7 @@ export default {
 
 .message.received {
   background: #ececec;
-
   border-radius: 0px 5px 5px 5px;
-
   float: left;
 }
 
@@ -1266,29 +1207,21 @@ export default {
 
 .message.received:after {
   border-width: 0px 10px 10px 0;
-
   border-color: transparent #ececec transparent transparent;
-
   top: 0;
-
   left: -10px;
 }
 
 .message.sent {
   background: #e1ffc7;
-
   border-radius: 5px 0px 5px 5px;
-
   float: right;
 }
 
 .message.sent:after {
   border-width: 0px 0 10px 10px;
-
   border-color: transparent transparent transparent #e1ffc7;
-
   top: 0;
-
   right: -10px;
 }
 
@@ -1305,21 +1238,15 @@ export default {
 
 .conversation {
   height: calc(100% - 12px);
-
   position: relative;
-
   background: #fff;
-
   z-index: 0;
 }
 
 .conversation ::-webkit-scrollbar {
   transition: all 0.5s;
-
   width: 5px;
-
   height: 1px;
-
   z-index: 10;
 }
 
@@ -1333,19 +1260,14 @@ export default {
 
 .conversation .conversation-container {
   height: calc(100% - 68px);
-
   overflow-x: hidden;
-
   padding: 0 16px;
-
   margin-bottom: 5px;
 }
 
 .conversation .conversation-container:after {
   content: '';
-
   display: table;
-
   clear: both;
 }
 
@@ -1356,39 +1278,22 @@ export default {
 
 .sc-launcher {
   display: flex;
-
   justify-content: center;
-
   align-items: center;
-
   padding: 0 20px;
-
   color: black;
-
   background-color: white;
-
   border: none;
-
   width: auto;
-
   height: 60px;
-
   background-position: center;
-
   background-repeat: no-repeat;
-
   position: fixed;
-
   right: 25px;
-
   bottom: 0;
-
   border-radius: 8px;
-
   transition: box-shadow 0.2s ease-in-out;
-
   cursor: pointer;
-
   box-shadow: 0 0px 27px 1.5px rgba(0, 0, 0, 0.2);
 }
 
@@ -1398,9 +1303,7 @@ export default {
 
 .sc-launcher:before {
   position: relative;
-
   display: block;
-
   transition: box-shadow 0.2s ease-in-out;
 }
 
@@ -1417,28 +1320,18 @@ export default {
 }
 
 .container__message-list {
+  background-color: white;
   border-radius: 0;
-
   height: 400px;
-
   overflow-y: auto;
-
   display: -ms-flexbox;
-
   display: -webkit-box;
-
   display: flex;
-
   -ms-flex-direction: column;
-
   -webkit-box-orient: vertical;
-
   -webkit-box-direction: normal;
-
   flex-direction: column;
-
   padding-left: 0;
-
   margin: 0;
 }
 
@@ -1454,62 +1347,41 @@ export default {
 
 .nav__toolbar > b {
   margin: auto;
-
   padding-left: 8px;
-
   flex: 8 0 auto;
 }
 
 /**
-
 * 20vh = 20% ?
-
  */
 
 .sc-chat-window {
   width: 370px;
-
   position: fixed;
-
   right: 25px;
-
   bottom: 20px;
-
   box-sizing: border-box;
-
   /*box-shadow: 0px 7px 40px 2px rgba(148, 149, 150, 0.1); */
-
   margin-bottom: 50px;
-
   padding: 0;
-
   box-shadow: 0px 0px 27px 1.5px rgba(0, 0, 0, 0.2);
-
   display: flex;
-
   flex-direction: column;
-
   justify-content: space-between;
-
   border-radius: 10px;
-
   animation: fadeIn;
-
   animation-duration: 0.3s;
-
   animation-timing-function: ease-in-out;
 }
 
 @keyframes fadeIn {
   0% {
     display: none;
-
     opacity: 0;
   }
 
   100% {
     display: flex;
-
     opacity: 1;
   }
 }
@@ -1523,23 +1395,16 @@ export default {
 }
 
 /**
-
 * height: 80& --> height: 80%
-
  */
 
 @media (max-width: 450px) {
   .sc-chat-window {
     width: 100%;
-
     height: 80%;
-
     right: 0px;
-
     left: 0px;
-
     bottom: 20px;
-
     border-radius: 0px;
   }
 
@@ -1552,30 +1417,19 @@ export default {
   display: flex;
   background: white;
   justify-content: center;
-
   align-items: center;
-
   gap: 8px;
-
   margin: 8px;
-
   border-radius: 8px;
-
   background-color: rgb(65, 73, 242);
-
   border: none;
-
   color: white;
-
   padding: 8px 12px;
-
   font-size: 16px;
-
   cursor: pointer;
 }
 
 /* Darker background on mouse-over */
-
 .button:hover {
   background-color: rgb(65, 73, 242);
 }
@@ -1599,7 +1453,6 @@ button {
 
 .input__group > textarea {
   outline: none;
-
   border: none;
 }
 
@@ -1613,7 +1466,6 @@ button {
 
 .message__image {
   width: 100%;
-
   height: 100%;
 }
 
@@ -1633,12 +1485,8 @@ button {
 
 .button__group {
   display: flex;
-
   /*border: 1px solid red;*/
-
   overflow: hidden;
-
   border-radius: 4px;
 }
-
 </style>
