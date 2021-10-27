@@ -131,14 +131,14 @@
 
         <textarea
           v-model="dataSend.text"
-          @keyup.ctrl.enter="onSend()"
+          @keyup.ctrl.enter="onSendMessage()"
           placeholder="Сообщение"
           required
         ></textarea>
 
         <button
           style="background: white;color: #4149f2; cursor: pointer"
-          @click="onSend()"
+          @click="onSendMessage()"
         >
           <b>Отправить</b>
         </button>
@@ -330,9 +330,7 @@ export default {
         .toString();
     },
 
-    onSend: function() {
-      var text = this.dataSend.text;
-
+    onSendMessage: function(text = this.dataSend.text) {
       var file = this.dataSend.file;
 
       if (text && file) {
