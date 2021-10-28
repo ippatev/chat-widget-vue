@@ -14,7 +14,7 @@
         <div id="messageListContainer" class="container__message-list">
           <div class="nav__toolbar">
             <b>{{ dialogName ? dialogName : 'Без имени' }}</b>
-            <button @click="onClose()" class="button">
+            <button id="close-button" @click="onClose()" class="button">
               Завершить беседу
               <done-icon></done-icon>
             </button>
@@ -131,14 +131,14 @@
 
         <textarea
           v-model="dataSend.text"
-          @keyup.ctrl.enter="onSendMessage()"
+          @keyup.ctrl.enter="sendMessage()"
           placeholder="Сообщение"
           required
         ></textarea>
 
         <button
           style="background: white;color: #4149f2; cursor: pointer"
-          @click="onSendMessage()"
+          @click="sendMessage()"
         >
           <b>Отправить</b>
         </button>
@@ -330,7 +330,7 @@ export default {
         .toString();
     },
 
-    onSendMessage: function(text = this.dataSend.text) {
+    sendMessage: function(text = this.dataSend.text) {
       var file = this.dataSend.file;
 
       if (text && file) {
@@ -939,7 +939,7 @@ export default {
     },
 
     onClose: function() {
-      if (this.ws.readyState == WebSocket.OPEN) {
+      if (this.ws && this.ws.readyState == WebSocket.OPEN) {
         this.ws.send('{"command":"close"}');
 
         localStorage.removeItem('chdtoken');
@@ -964,12 +964,9 @@ export default {
         };
 
         axios
-
           .post('http://automessager.biz/api/virtual/close/', ids)
-
           .then((res) => {
             localStorage.removeItem('chdtoken');
-
             this.dialogueEnded = true;
           });
       }
@@ -979,7 +976,6 @@ export default {
       const files = event.target.files;
 
       let filename = files[0].name;
-
       if (filename.lastIndexOf('.') <= 0) {
         return alert('Пожалуйста, добавьте файл');
       }
@@ -987,14 +983,10 @@ export default {
       const fileReader = new FileReader();
 
       fileReader.addEventListener('load', () => {
-        var imageTypes = ['jpg', 'jpeg', 'png', 'bmp'];
-
-        var extension = filename
-
+        let imageTypes = ['jpg', 'jpeg', 'png', 'bmp'];
+        let extension = filename
             .split('.')
-
             .pop()
-
             .toLowerCase(),
           isTrue = imageTypes.indexOf(extension) > -1;
 
@@ -1005,7 +997,6 @@ export default {
         }
 
         this.dataSend.file64 = fileReader.result;
-
         this.dataSend.file = fileReader.result.split(',')[1];
       });
 
@@ -1013,13 +1004,6 @@ export default {
 
       this.fileAttached = true;
     },
-
-    /**
-
-     * @todo
-
-     */
-
     getListCommands() {
       if (this.messageListTemplate[this.messageListTemplate.length - 1]) {
         if (
@@ -1034,13 +1018,10 @@ export default {
   },
 
   /**
-
    * @todo find an optimal solution
-
    */
-
   updated() {
-    //this.getListCommands();
+    this.getListCommands();
   },
 };
 </script>
